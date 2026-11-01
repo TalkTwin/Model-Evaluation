@@ -1,0 +1,2 @@
+name,status,video_len_s,audio_len_s,output_len_s,resolution,inference_s,total_wall_s,rtf,pytorch_peak_alloc_mb,pytorch_peak_reserved_mb,device_peak_mb,gpu_total_mb,cpu_ram_peak_mb,output_path
+marathi-demo-2-20s,success,15.019,20.0,20.08,1280x720,469.403,472.25,23.38,13794.2,19660.0,20207.4,24192.0,10827.7,/home/aryannavale/projects/outputs/bench-20261031-152743/latentsync/_raw_marathi-demo-2-20s/marathi-demo-2-latentsync.mp4

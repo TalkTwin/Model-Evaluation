@@ -1,0 +1,4 @@
+task_0:
+  video_path: "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-2.mp4"
+  audio_path: "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-voice-2.mp3"
+  bbox_shift: 0

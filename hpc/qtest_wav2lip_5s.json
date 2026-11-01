@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "generated": "2026-10-31T18:31:43+00:00",
+  "mode": "cross_audio",
+  "input_video": "inputs/marathi-demo-2-5s/marathi-demo-2.mp4",
+  "output_video": "outputs/bench-20261031-152743/wav2lip/marathi-demo-2-5s.mp4",
+  "audio": "inputs/marathi-demo-2-5s/marathi-demo-voice-2-5s.mp3",
+  "metrics": {
+    "audio_out_diff_s": 0.0,
+    "lse_d": 10.348,
+    "lse_c": 1.6098,
+    "av_offset": -2,
+    "csim": 0.8182,
+    "niqe": 164.3495,
+    "sharpness": 406.84,
+    "mouth_sharpness": 21.67,
+    "mos": null,
+    "mos_note": "manual 1-5 rating; not automated"
+  },
+  "details": {
+    "media": {
+      "input": {
+        "duration_s": 15.019,
+        "width": 1280,
+        "height": 720,
+        "fps": 24.0
+      },
+      "output": {
+        "duration_s": 5.0,
+        "width": 1280,
+        "height": 720,
+        "fps": 24.0
+      },
+      "audio": {
+        "duration_s": 5.0,
+        "width": 0,
+        "height": 0,
+        "fps": 25.0
+      }
+    },
+    "audio_samples": 80000,
+    "input_frames": 360,
+    "output_frames": 117,
+    "face_detection_rate": 1.0,
+    "input_face_detection_rate": 1.0,
+    "lse": {
+      "frames_used": 117
+    },
+    "csim": {
+      "input_faces": 45,
+      "output_faces": 15
+    },
+    "niqe": {
+      "valid_samples": 15,
+      "samples": 15
+    }
+  },
+  "errors": {},
+  "runtime_s": 12.38,
+  "device": "cpu"
+}

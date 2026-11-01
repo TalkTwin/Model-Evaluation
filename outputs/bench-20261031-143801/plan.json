@@ -1,0 +1,78 @@
+{
+  "created": "2026-10-31T09:08:01+00:00",
+  "created_host": "aicoeserver01",
+  "created_by": "aryannavale",
+  "outdir": "/home/aryannavale/projects/outputs/bench-20261031-143801",
+  "inputs_dir": "/home/aryannavale/projects/inputs",
+  "mode": "sequential",
+  "models": [
+    "heygem",
+    "latentsync",
+    "musetalk",
+    "wav2lip"
+  ],
+  "pairs": [
+    {
+      "tag": "marathi-demo-2",
+      "folder": "/home/aryannavale/projects/inputs/marathi-demo-2",
+      "video": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-2.mp4",
+      "audio": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-voice-2.mp3",
+      "pair_index": 2
+    }
+  ],
+  "runs": [
+    {
+      "index": 0,
+      "model": "heygem",
+      "tag": "marathi-demo-2",
+      "folder": "/home/aryannavale/projects/inputs/marathi-demo-2",
+      "video": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-2.mp4",
+      "audio": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-voice-2.mp3",
+      "pair_index": 2,
+      "status": "pending"
+    },
+    {
+      "index": 1,
+      "model": "latentsync",
+      "tag": "marathi-demo-2",
+      "folder": "/home/aryannavale/projects/inputs/marathi-demo-2",
+      "video": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-2.mp4",
+      "audio": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-voice-2.mp3",
+      "pair_index": 2,
+      "status": "pending"
+    },
+    {
+      "index": 2,
+      "model": "musetalk",
+      "tag": "marathi-demo-2",
+      "folder": "/home/aryannavale/projects/inputs/marathi-demo-2",
+      "video": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-2.mp4",
+      "audio": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-voice-2.mp3",
+      "pair_index": 2,
+      "status": "pending"
+    },
+    {
+      "index": 3,
+      "model": "wav2lip",
+      "tag": "marathi-demo-2",
+      "folder": "/home/aryannavale/projects/inputs/marathi-demo-2",
+      "video": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-2.mp4",
+      "audio": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-voice-2.mp3",
+      "pair_index": 2,
+      "status": "pending"
+    }
+  ],
+  "jobs": [
+    {
+      "label": "sequential",
+      "job_id": "1567",
+      "runs": [
+        0,
+        1,
+        2,
+        3
+      ]
+    }
+  ],
+  "sequential_time": "08:00:00"
+}

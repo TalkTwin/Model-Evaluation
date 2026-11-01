@@ -1,0 +1,33 @@
+# Large media / benchmark outputs (keep repo small)
+*.mp4
+*.mp3
+*.wav
+*.avi
+*.mkv
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+.venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Logs
+*.log
+logs/
+dryrun.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cloud attachment artifacts
+.cloud-attachments/
+.freebuff/
+
+# Raw per-run processing dirs (large intermediates)
+outputs/*/_raw_*/**
