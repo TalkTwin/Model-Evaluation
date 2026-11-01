@@ -5,6 +5,9 @@
 *.avi
 *.mkv
 
+# Exception: videos needed for GitHub Pages
+!docs/videos/**/*.mp4
+
 # Python
 __pycache__/
 *.py[cod]

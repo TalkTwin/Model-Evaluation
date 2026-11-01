@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lip-Sync Benchmark — Marathi Demo</title>
+<style>
+  :root {
+    --bg:#f5f7fa; --card:#fff; --ink:#22303f; --muted:#65758b;
+    --line:#dfe6ee; --blue:#2563eb; --violet:#7c3aed; --green:#15803d;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font-family:"Segoe UI",system-ui,-apple-system,sans-serif; line-height:1.55; }
+  .wrap { max-width:900px; margin:0 auto; padding:30px; }
+  header.hero { background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 55%,#6d28d9 100%);
+                 color:#fff; border-radius:16px; padding:36px 40px; margin-bottom:24px; }
+  header.hero h1 { margin:0 0 8px; font-size:clamp(1.5rem,3vw,2rem); }
+  header.hero p { margin:0; opacity:.92; font-size:1.02rem; }
+  .meta-strip { display:flex; flex-wrap:wrap; gap:16px; background:#111827; color:#d1d5db;
+                 border-radius:12px; padding:14px 18px; font-size:.88rem; margin-bottom:24px; }
+  .meta-strip b { color:#fff; }
+  .cards { display:grid; grid-template-columns:1fr; gap:16px; }
+  @media (min-width:720px) { .cards { grid-template-columns:1fr 1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+          padding:22px; box-shadow:0 2px 12px rgba(15,23,42,.05); display:flex;
+          flex-direction:column; gap:10px; }
+  .card .icon { font-size:1.8rem; }
+  .card h2 { margin:0; font-size:1.2rem; }
+  .card p { margin:0; color:var(--muted); font-size:.9rem; flex:1; }
+  .card .tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .tag { background:#eef2f7; color:#475569; border-radius:999px; padding:3px 9px;
+         font-size:.72rem; font-weight:600; }
+  .card a.button { display:inline-block; margin-top:8px; background:var(--blue); color:#fff;
+                   text-decoration:none; font-weight:700; font-size:.88rem; padding:9px 14px;
+                   border-radius:9px; text-align:center; }
+  .card a.button.violet { background:var(--violet); }
+  .card a.button:hover { filter:brightness(1.08); }
+  .note-box { background:#eef5ff; border-left:4px solid var(--blue); border-radius:0 10px 10px 0;
+               padding:15px 18px; margin:24px 0; font-size:.88rem; color:#1e3a8a; }
+  footer { text-align:center; color:var(--muted); font-size:.8rem; padding:22px 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>🎬 Lip-Sync Benchmark — Marathi Demo</h1>
+    <p>LatentSync · MuseTalk · Wav2Lip · HeyGem · system + quality metrics</p>
+  </header>
+
+  <div class="meta-strip">
+    <span><b>Input:</b> marathi-demo-2.mp4 · 15.02 s · 1280×720 · 24 fps</span>
+    <span><b>Models:</b> 4</span>
+    <span><b>Outputs:</b> 28 videos</span>
+    <span><b>Node:</b> aicoeserver05 · RTX PRO 6000 Blackwell MIG</span>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="icon">🎯</div>
+      <h2>Quality Metrics Report</h2>
+      <p>LSE-D, LSE-C, FID, FVD, SSIM, PSNR, LPIPS, CSIM, LMD, NIQE per run with
+         grouped comparison tables and best-value highlights.</p>
+      <div class="tags"><span class="tag">28 runs</span><span class="tag">7 durations</span><span class="tag">35 videos</span></div>
+      <a class="button violet" href="quality_report.html">Open quality report →</a>
+    </div>
+
+    <div class="card">
+      <div class="icon">⚙️</div>
+      <h2>System Benchmark Report</h2>
+      <p>Wall time, RTF, VRAM, RAM, output size + full 16-run comparison table
+         with video comparison for 5/10/20/64.5 s.</p>
+      <div class="tags"><span class="tag">16 runs</span><span class="tag">RTF</span><span class="tag">VRAM</span></div>
+      <a class="button" href="benchmark_report.html">Open system report →</a>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <b>Two test modes:</b> reconstruction uses the video's own audio (SSIM/PSNR/LPIPS/LMD valid).
+    Cross-audio (dubbing) uses a separate voice track — scored with no-reference metrics + LSE + CSIM.
+    MOS is a manual 1–5 rating (left blank by design).
+  </div>
+
+  <footer>Lip-Sync model benchmark · Marathi demo · GitHub Pages</footer>
+</div>
+</body>
+</html>

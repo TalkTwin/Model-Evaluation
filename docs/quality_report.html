@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lip-Sync Quality Metrics — Video + Numbers</title>
+<style>
+  :root {
+    --bg:#f5f7fa; --card:#fff; --ink:#22303f; --muted:#65758b;
+    --line:#dfe6ee; --blue:#2563eb; --green:#15803d; --amber:#b45309;
+    --red:#b91c1c; --violet:#7c3aed;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font-family:"Segoe UI",system-ui,-apple-system,sans-serif; line-height:1.5; }
+  .wrap { max-width:1740px; margin:0 auto; padding:22px; }
+  header.hero { background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 55%,#6d28d9 100%);
+                 color:#fff; border-radius:16px; padding:32px 38px; margin-bottom:18px; }
+  header.hero h1 { margin:0 0 6px; font-size:clamp(1.5rem,3vw,2.2rem); }
+  header.hero p { margin:0; opacity:.9; }
+  .hero-links { margin-top:16px; display:flex; flex-wrap:wrap; gap:10px; }
+  .hero-links a { color:#fff; text-decoration:none; border:1px solid rgba(255,255,255,.35);
+                   padding:7px 13px; border-radius:999px; font-size:.88rem; font-weight:600; }
+  .hero-links a:hover { background:rgba(255,255,255,.14); }
+  .meta-strip { display:flex; flex-wrap:wrap; gap:18px; background:#111827; color:#d1d5db;
+                 border-radius:10px; padding:12px 18px; font-size:.86rem; margin-bottom:18px; }
+  .meta-strip b { color:#fff; }
+  nav.toc { position:sticky; top:0; z-index:10; background:rgba(255,255,255,.94);
+             backdrop-filter:blur(8px); border:1px solid var(--line); border-radius:10px;
+             padding:10px 14px; display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
+  nav.toc a { color:var(--blue); text-decoration:none; font-weight:600; font-size:.85rem;
+               padding:4px 9px; border-radius:6px; }
+  nav.toc a:hover { background:#e8efff; }
+  .mode-header { margin:26px 0 10px; display:flex; align-items:center; gap:12px; }
+  .mode-header h2 { margin:0; font-size:1.45rem; }
+  .mode-header p { margin:0; color:var(--muted); font-size:.9rem; }
+  .duration-block { background:var(--card); border:1px solid var(--line); border-radius:14px;
+                     padding:22px; margin:18px 0 26px; box-shadow:0 2px 10px rgba(15,23,42,.04); }
+  .duration-head { display:flex; justify-content:space-between; align-items:flex-end;
+                    gap:16px; border-bottom:2px solid #eef2f7; padding-bottom:12px; }
+  .duration-head h2 { margin:2px 0 0; font-size:1.45rem; }
+  .mode-pill { display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.06em;
+                text-transform:uppercase; padding:3px 9px; border-radius:999px; color:#fff; }
+  .mode-pill.reconstruction { background:var(--violet); }
+  .mode-pill.cross { background:var(--blue); }
+  .dur-meta { color:var(--muted); font-size:.85rem; text-align:right; }
+  .mode-note { color:var(--muted); font-size:.86rem; margin:10px 0 16px; }
+  .input-row { display:grid; grid-template-columns:minmax(0,2fr) minmax(240px,1fr);
+                gap:16px; margin-bottom:18px; }
+  .input-card,.audio-card { border:1px solid var(--line); border-radius:10px; padding:14px;
+                             background:#fbfdff; }
+  .input-title { font-weight:700; font-size:.9rem; margin-bottom:9px; }
+  .input-title span { color:var(--muted); font-weight:500; }
+  .input-card video { width:100%; max-height:320px; border-radius:8px; background:#000; }
+  .video-meta { color:var(--muted); font-size:.77rem; margin-top:6px; }
+  .audio-name { font-family:ui-monospace,Consolas,monospace; font-size:.85rem; word-break:break-all; }
+  .audio-dur { font-size:1.8rem; font-weight:800; color:var(--blue); margin:8px 0; }
+  .audio-card p { color:var(--muted); font-size:.82rem; margin:0; }
+  .cards { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+  @media (max-width:1250px) { .cards { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width:720px) { .cards { grid-template-columns:1fr; }
+                              .input-row { grid-template-columns:1fr; } }
+  .model-card { border:1px solid var(--line); border-radius:10px; padding:12px;
+                 display:flex; flex-direction:column; gap:8px; background:#fff; }
+  .model-head { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+  .badge { display:inline-block; color:#fff; font-size:.7rem; font-weight:800;
+            padding:3px 8px; border-radius:999px; letter-spacing:.03em; }
+  .badge-wav2lip { background:#15803d; }
+  .badge-heygem { background:#b91c1c; }
+  .badge-musetalk { background:#b45309; }
+  .badge-latentsync { background:#7c3aed; }
+  .tag { color:var(--muted); font-size:.72rem; font-family:ui-monospace,Consolas,monospace; }
+  .status { margin-left:auto; font-size:.7rem; font-weight:700; }
+  .status.completed { color:var(--green); }
+  .status.failed { color:var(--red); }
+  .model-card video { width:100%; aspect-ratio:16/9; border-radius:8px; background:#000; }
+  table.stats { width:100%; border-collapse:separate; border-spacing:0; font-size:.8rem;
+                 border:1px solid #e6edf5; border-radius:8px; overflow:hidden; }
+  table.stats tr.group-row th { background:#f1f5f9; color:#334155; font-size:.66rem;
+                 font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+                 padding:6px 8px; border-bottom:1px solid #e2e8f0; }
+  table.stats th { text-align:left; color:var(--muted); font-weight:600; padding:5px 8px;
+                    border-bottom:1px solid #f1f5f9; white-space:nowrap; }
+  table.stats td { text-align:right; padding:5px 8px; border-bottom:1px solid #f1f5f9;
+                    font-variant-numeric:tabular-nums; }
+  table.stats tbody tr:nth-child(even) td { background:#fbfdff; }
+  table.stats tbody tr:hover td { background:#eef6ff; }
+  table.stats tr:last-child th, table.stats tr:last-child td { border-bottom:none; }
+  table.stats td.best { color:#166534; font-weight:800; background:#ecfdf3;
+                    box-shadow:inset 0 0 0 1px #bbf7d0; border-radius:6px; }
+  table.stats td.na { color:#94a3b8; font-style:italic; }
+  .err { color:var(--amber); font-size:.7rem; }
+  .manual { color:var(--muted); font-style:italic; }
+  .warn { color:var(--amber); font-size:.7rem; }
+  h3 { margin:20px 0 8px; font-size:1.05rem; }
+  .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:12px;
+                 box-shadow:0 2px 10px rgba(15,23,42,.04); }
+  table.compare { width:100%; border-collapse:separate; border-spacing:0; font-size:.8rem;
+                   min-width:1180px; }
+  table.compare thead th { background:#111827; color:#e5e7eb; padding:8px 9px; text-align:right;
+                   white-space:nowrap; font-size:.7rem; text-transform:uppercase;
+                   letter-spacing:.05em; border-bottom:1px solid #334155; }
+  table.compare thead tr.group-row th { background:#1e293b; color:#cbd5e1; font-size:.65rem;
+                   letter-spacing:.08em; padding:6px 9px; border-bottom:1px solid #334155; }
+  table.compare thead th.model-head { text-align:left; vertical-align:bottom;
+                   background:#0f172a; color:#fff; }
+  table.compare tbody td { padding:8px 9px; border-bottom:1px solid #eef2f7; text-align:right;
+                   font-variant-numeric:tabular-nums; }
+  table.compare tbody td.model-cell { text-align:left; white-space:nowrap; font-weight:700; }
+  table.compare tbody tr:nth-child(even) td { background:#fbfdff; }
+  table.compare tbody tr:hover td { background:#eef6ff; }
+  table.compare tbody tr:last-child td { border-bottom:none; }
+  table.compare td.best { background:#ecfdf3; color:#166534; font-weight:800;
+                   box-shadow:inset 0 0 0 1px #bbf7d0; }
+  table.compare td.na { color:#94a3b8; font-style:italic; }
+  table.compare th.model-head, table.compare td.model-cell { position:sticky; left:0; z-index:2; }
+  table.compare td.model-cell { background:#fff; }
+  table.compare tbody tr:nth-child(even) td.model-cell { background:#fbfdff; }
+  table.compare tbody tr:hover td.model-cell { background:#eef6ff; }
+  table.compare thead th.model-head { z-index:3; }
+  table.compare thead tr.group-row th.group-lse { box-shadow:inset 0 3px 0 #60a5fa; }
+  table.compare thead tr.group-row th.group-id { box-shadow:inset 0 3px 0 #34d399; }
+  table.compare thead tr.group-row th.group-gen { box-shadow:inset 0 3px 0 #fbbf24; }
+  table.compare thead tr.group-row th.group-rec { box-shadow:inset 0 3px 0 #a78bfa; }
+  table.compare thead tr.group-row th.group-nr { box-shadow:inset 0 3px 0 #f472b6; }
+  table.compare thead tr.group-row th.group-sys { box-shadow:inset 0 3px 0 #94a3b8; }
+  .table-legend { color:var(--muted); font-size:.75rem; margin:8px 2px 0; }
+  .note-box { background:#eef5ff; border-left:4px solid var(--blue); border-radius:0 10px 10px 0;
+               padding:14px 16px; margin:18px 0; font-size:.86rem; color:#1e3a8a; }
+  .note-box b { color:#0f2f6b; }
+  .legend { display:flex; flex-wrap:wrap; gap:14px; font-size:.78rem; color:var(--muted); margin-top:8px; }
+  footer { text-align:center; color:var(--muted); font-size:.8rem; padding:22px 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>🎯 Lip-Sync Quality Metrics — Videos + Numbers</h1>
+    <p>Reconstruction and cross-audio (dubbing) tests · same input video, only the audio length changes</p>
+    <div class="hero-links">
+      <a href="benchmark_report.html">← System benchmark report</a>
+      <a href="#recon-section">Reconstruction tests</a>
+      <a href="#cross-section">Cross-audio / dubbing</a>
+      <a href="#metric-guide">Metric guide</a>
+    </div>
+  </header>
+
+  <div class="meta-strip">
+    <span><b>Runs:</b> 28</span>
+    <span><b>Models:</b> Wav2Lip · HeyGem · MuseTalk · LatentSync</span>
+    <span><b>GPU:</b> RTX PRO 6000 Blackwell MIG 1g.24gb</span>
+    <span><b>Input:</b> marathi-demo-2.mp4 (15.02 s, 1280×720)</span>
+    <span><b>Node:</b> aicoeserver05</span>
+  </div>
+
+  <nav class="toc"><a href="#reconstruction-5s">Recon 5 s</a><a href="#reconstruction-10s">Recon 10 s</a><a href="#reconstruction-15s">Recon 15 s</a><a href="#cross-5s">Dubbing 5 s</a><a href="#cross-10s">Dubbing 10 s</a><a href="#cross-20s">Dubbing 20 s</a><a href="#cross-64.5s1min">Dubbing 64.5 s (1 min)</a><a href="#metric-guide">Metric guide</a></nav>
+
+  <div id="metric-guide" class="note-box">
+    <b>How to read this:</b> <b>LSE-D</b> lower is better (lip/audio distance), <b>LSE-C</b> higher is better
+    (sync confidence), <b>CSIM</b> higher is better (ArcFace identity), <b>FID/FVD</b> lower is better,
+    <b>SSIM/PSNR</b> higher and <b>LPIPS/LMD</b> lower are better. <b>NIQE</b> lower is better
+    (median over 3 fps face-centred crops).
+    <b>MOS</b> is a human 1–5 score and is left manual. SSIM / PSNR / LPIPS / LMD only make sense in
+    reconstruction (the output is compared with the original frames). Cross-audio runs are scored with
+    no-reference metrics + identity + lip-sync.
+    <div class="legend"><span>Green = best value for that duration.</span>
+      <span>— = not applicable / not computed.</span>
+      <span>RTF = wall seconds ÷ audio seconds (lower is faster).</span></div>
+  </div>
+
+  <div id="recon-section" class="mode-header">
+    <span class="mode-pill reconstruction">Reconstruction</span>
+    <div><h2>Real video + its own audio</h2>
+      <p>Frames can be compared with ground truth, so SSIM / PSNR / LPIPS / LMD are valid.</p></div>
+  </div>
+  
+    <section id="reconstruction-5s" class="duration-block">
+      <div class="duration-head">
+        <div>
+          <span class="mode-pill reconstruction">Reconstruction</span>
+          <h2>5 s</h2>
+        </div>
+        <div class="dur-meta">marathi-demo-voice-2-recon-5s.wav · 5.00 s audio</div>
+      </div>
+      <p class="mode-note">reconstruction: the video's own audio was used; SSIM / PSNR / LPIPS / LMD are valid.</p>
+      <div class="input-row">
+        <div class="input-card">
+          <div class="input-title">📥 Input video <span>(same for all models)</span></div>
+          <video controls preload="metadata" src="videos/inputs/marathi-demo-2.mp4"></video>
+          <div class="video-meta">marathi-demo-2.mp4 · 15.02 s · 1280×720 · 24 fps</div>
+        </div>
+        <div class="audio-card">
+          <div class="input-title">🎧 Driving audio</div>
+          <div class="audio-name">marathi-demo-voice-2-recon-5s.wav</div>
+          <div class="audio-dur">5.00 s</div>
+          <p>All four models below used this exact audio file and the same input video.</p>
+        </div>
+      </div>
+      <div class="cards">
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-wav2lip">Wav2Lip</span>
+          <span class="tag">recon-5s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/wav2lip/recon-5s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 5.06 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class='best'>9.75 </td></tr><tr><th>LSE-C ↑</th><td class='best'>2.26 </td></tr><tr><th>CSIM ↑</th><td class=''>0.81 </td></tr><tr><th>FID ↓</th><td class=''>17.6 </td></tr><tr><th>FVD ↓</th><td class=''>63.9 </td></tr><tr><th>SSIM ↑</th><td class=''>0.99 </td></tr><tr><th>PSNR ↑</th><td class='best'>38.6 </td></tr><tr><th>LPIPS ↓</th><td class=''>0.00 </td></tr><tr><th>LMD ↓</th><td class='best'>0.03 </td></tr><tr><th>NIQE ↓</th><td class=''>2.30 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>36.6 s</td></tr><tr><th>RTF</th><td>7.33x</td></tr><tr><th>VRAM peak</th><td>19.7 GB</td></tr><tr><th>RAM peak</th><td>2.6 GB</td></tr><tr><th>Output size</th><td>0.67 MB</td></tr><tr><th>Output length</th><td>5.06 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-heygem">HeyGem</span>
+          <span class="tag">recon-5s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/heygem/recon-5s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 5.06 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>10.9 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.65 </td></tr><tr><th>CSIM ↑</th><td class=''>0.76 </td></tr><tr><th>FID ↓</th><td class=''>17.3 </td></tr><tr><th>FVD ↓</th><td class=''>42.0 </td></tr><tr><th>SSIM ↑</th><td class=''>0.99 </td></tr><tr><th>PSNR ↑</th><td class=''>38.0 </td></tr><tr><th>LPIPS ↓</th><td class=''>0.00 </td></tr><tr><th>LMD ↓</th><td class=''>0.04 </td></tr><tr><th>NIQE ↓</th><td class='best'>2.14 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>58.4 s</td></tr><tr><th>RTF</th><td>11.7x</td></tr><tr><th>VRAM peak</th><td>3.6 GB</td></tr><tr><th>RAM peak</th><td>6.9 GB</td></tr><tr><th>Output size</th><td>1.78 MB</td></tr><tr><th>Output length</th><td>5.06 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-musetalk">MuseTalk</span>
+          <span class="tag">recon-5s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/musetalk/recon-5s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 5.06 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.4 </td></tr><tr><th>LSE-C ↑</th><td class=''>0.80 </td></tr><tr><th>CSIM ↑</th><td class=''>0.74 </td></tr><tr><th>FID ↓</th><td class=''>7.99 </td></tr><tr><th>FVD ↓</th><td class=''>66.3 </td></tr><tr><th>SSIM ↑</th><td class='best'>0.99 </td></tr><tr><th>PSNR ↑</th><td class=''>37.6 </td></tr><tr><th>LPIPS ↓</th><td class='best'>0.00 </td></tr><tr><th>LMD ↓</th><td class=''>0.05 </td></tr><tr><th>NIQE ↓</th><td class=''>2.17 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>160 s</td></tr><tr><th>RTF</th><td>31.9x</td></tr><tr><th>VRAM peak</th><td>19.7 GB</td></tr><tr><th>RAM peak</th><td>5.0 GB</td></tr><tr><th>Output size</th><td>0.60 MB</td></tr><tr><th>Output length</th><td>5.06 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-latentsync">LatentSync</span>
+          <span class="tag">recon-5s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/latentsync/recon-5s.mp4"></video>
+        <div class="video-meta">1280x720 · 25.0 fps · 5.08 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>10.4 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.88 </td></tr><tr><th>CSIM ↑</th><td class='best'>0.88 </td></tr><tr><th>FID ↓</th><td class='best'>6.92 </td></tr><tr><th>FVD ↓</th><td class='best'>33.9 </td></tr><tr><th>SSIM ↑</th><td class=''>0.97 </td></tr><tr><th>PSNR ↑</th><td class=''>33.0 </td></tr><tr><th>LPIPS ↓</th><td class=''>0.01 </td></tr><tr><th>LMD ↓</th><td class=''>0.07 </td></tr><tr><th>NIQE ↓</th><td class=''>2.29 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>244 s</td></tr><tr><th>RTF</th><td>48.8x</td></tr><tr><th>VRAM peak</th><td>40.2 GB</td></tr><tr><th>RAM peak</th><td>10.6 GB</td></tr><tr><th>Output size</th><td>1.04 MB</td></tr><tr><th>Output length</th><td>5.08 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div></div>
+      <h3>Comparison — 5 s</h3>
+      <div class='table-wrap'><table class='compare'><thead><tr class='group-row'><th rowspan='2' class='model-head'>Model</th><th colspan="2" class="group-lse">Lip-sync</th><th colspan="1" class="group-id">Identity</th><th colspan="2" class="group-gen">Generation</th><th colspan="4" class="group-rec">Reconstruction</th><th colspan="1" class="group-nr">No-reference</th><th colspan="3" class="group-sys">System</th></tr><tr><th>LSE-D ↓</th><th>LSE-C ↑</th><th>CSIM ↑</th><th>FID ↓</th><th>FVD ↓</th><th>SSIM ↑</th><th>PSNR ↑</th><th>LPIPS ↓</th><th>LMD ↓</th><th>NIQE ↓</th><th>Wall</th><th>RTF</th><th>VRAM</th></tr></thead><tbody><tr><td class="model-cell"><span class="badge badge-wav2lip">Wav2Lip</span></td><td class='best'>9.75</td><td class='best'>2.26</td><td class=''>0.81</td><td class=''>17.6</td><td class=''>63.9</td><td class=''>0.99</td><td class='best'>38.6</td><td class=''>0.00</td><td class='best'>0.03</td><td class=''>2.30</td><td>36.6 s</td><td>7.33x</td><td>19.7 GB</td></tr><tr><td class="model-cell"><span class="badge badge-heygem">HeyGem</span></td><td class=''>10.9</td><td class=''>1.65</td><td class=''>0.76</td><td class=''>17.3</td><td class=''>42.0</td><td class=''>0.99</td><td class=''>38.0</td><td class=''>0.00</td><td class=''>0.04</td><td class='best'>2.14</td><td>58.4 s</td><td>11.7x</td><td>3.6 GB</td></tr><tr><td class="model-cell"><span class="badge badge-musetalk">MuseTalk</span></td><td class=''>11.4</td><td class=''>0.80</td><td class=''>0.74</td><td class=''>7.99</td><td class=''>66.3</td><td class='best'>0.99</td><td class=''>37.6</td><td class='best'>0.00</td><td class=''>0.05</td><td class=''>2.17</td><td>160 s</td><td>31.9x</td><td>19.7 GB</td></tr><tr><td class="model-cell"><span class="badge badge-latentsync">LatentSync</span></td><td class=''>10.4</td><td class=''>1.88</td><td class='best'>0.88</td><td class='best'>6.92</td><td class='best'>33.9</td><td class=''>0.97</td><td class=''>33.0</td><td class=''>0.01</td><td class=''>0.07</td><td class=''>2.29</td><td>244 s</td><td>48.8x</td><td>40.2 GB</td></tr></tbody></table></div><div class='table-legend'>Green pill = best value in this comparison. ↓ lower is better · ↑ higher is better · n/a = not valid for this mode. Reconstruction metrics are only meaningful for reconstruction runs.</div>
+    </section>
+    <section id="reconstruction-10s" class="duration-block">
+      <div class="duration-head">
+        <div>
+          <span class="mode-pill reconstruction">Reconstruction</span>
+          <h2>10 s</h2>
+        </div>
+        <div class="dur-meta">marathi-demo-voice-2-recon-10s.wav · 10.0 s audio</div>
+      </div>
+      <p class="mode-note">reconstruction: the video's own audio was used; SSIM / PSNR / LPIPS / LMD are valid.</p>
+      <div class="input-row">
+        <div class="input-card">
+          <div class="input-title">📥 Input video <span>(same for all models)</span></div>
+          <video controls preload="metadata" src="videos/inputs/marathi-demo-2.mp4"></video>
+          <div class="video-meta">marathi-demo-2.mp4 · 15.02 s · 1280×720 · 24 fps</div>
+        </div>
+        <div class="audio-card">
+          <div class="input-title">🎧 Driving audio</div>
+          <div class="audio-name">marathi-demo-voice-2-recon-10s.wav</div>
+          <div class="audio-dur">10.0 s</div>
+          <p>All four models below used this exact audio file and the same input video.</p>
+        </div>
+      </div>
+      <div class="cards">
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-wav2lip">Wav2Lip</span>
+          <span class="tag">recon-10s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/wav2lip/recon-10s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 10.1 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class='best'>9.62 </td></tr><tr><th>LSE-C ↑</th><td class='best'>2.97 </td></tr><tr><th>CSIM ↑</th><td class=''>0.83 </td></tr><tr><th>FID ↓</th><td class=''>15.4 </td></tr><tr><th>FVD ↓</th><td class=''>69.3 </td></tr><tr><th>SSIM ↑</th><td class=''>0.99 </td></tr><tr><th>PSNR ↑</th><td class='best'>38.6 </td></tr><tr><th>LPIPS ↓</th><td class=''>0.00 </td></tr><tr><th>LMD ↓</th><td class='best'>0.03 </td></tr><tr><th>NIQE ↓</th><td class=''>2.23 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>44.7 s</td></tr><tr><th>RTF</th><td>4.47x</td></tr><tr><th>VRAM peak</th><td>16.1 GB</td></tr><tr><th>RAM peak</th><td>3.2 GB</td></tr><tr><th>Output size</th><td>1.28 MB</td></tr><tr><th>Output length</th><td>10.1 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-heygem">HeyGem</span>
+          <span class="tag">recon-10s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/heygem/recon-10s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 10.1 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>10.9 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.90 </td></tr><tr><th>CSIM ↑</th><td class=''>0.77 </td></tr><tr><th>FID ↓</th><td class=''>14.8 </td></tr><tr><th>FVD ↓</th><td class=''>53.2 </td></tr><tr><th>SSIM ↑</th><td class=''>0.99 </td></tr><tr><th>PSNR ↑</th><td class=''>37.6 </td></tr><tr><th>LPIPS ↓</th><td class=''>0.00 </td></tr><tr><th>LMD ↓</th><td class=''>0.05 </td></tr><tr><th>NIQE ↓</th><td class='best'>2.14 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>98.9 s</td></tr><tr><th>RTF</th><td>9.89x</td></tr><tr><th>VRAM peak</th><td>24.8 GB</td></tr><tr><th>RAM peak</th><td>7.2 GB</td></tr><tr><th>Output size</th><td>3.40 MB</td></tr><tr><th>Output length</th><td>10.1 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-musetalk">MuseTalk</span>
+          <span class="tag">recon-10s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/musetalk/recon-10s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 10.1 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.6 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.04 </td></tr><tr><th>CSIM ↑</th><td class=''>0.74 </td></tr><tr><th>FID ↓</th><td class=''>4.80 </td></tr><tr><th>FVD ↓</th><td class=''>85.5 </td></tr><tr><th>SSIM ↑</th><td class='best'>0.99 </td></tr><tr><th>PSNR ↑</th><td class=''>37.5 </td></tr><tr><th>LPIPS ↓</th><td class='best'>0.00 </td></tr><tr><th>LMD ↓</th><td class=''>0.06 </td></tr><tr><th>NIQE ↓</th><td class=''>2.17 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>191 s</td></tr><tr><th>RTF</th><td>19.1x</td></tr><tr><th>VRAM peak</th><td>22.9 GB</td></tr><tr><th>RAM peak</th><td>4.9 GB</td></tr><tr><th>Output size</th><td>1.15 MB</td></tr><tr><th>Output length</th><td>10.1 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-latentsync">LatentSync</span>
+          <span class="tag">recon-10s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/latentsync/recon-10s.mp4"></video>
+        <div class="video-meta">1280x720 · 25.0 fps · 10.1 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>10.6 </td></tr><tr><th>LSE-C ↑</th><td class=''>2.26 </td></tr><tr><th>CSIM ↑</th><td class='best'>0.88 </td></tr><tr><th>FID ↓</th><td class='best'>3.81 </td></tr><tr><th>FVD ↓</th><td class='best'>42.7 </td></tr><tr><th>SSIM ↑</th><td class=''>0.95 </td></tr><tr><th>PSNR ↑</th><td class=''>30.0 </td></tr><tr><th>LPIPS ↓</th><td class=''>0.01 </td></tr><tr><th>LMD ↓</th><td class=''>0.09 </td></tr><tr><th>NIQE ↓</th><td class=''>2.25 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>322 s</td></tr><tr><th>RTF</th><td>32.2x</td></tr><tr><th>VRAM peak</th><td>40.2 GB</td></tr><tr><th>RAM peak</th><td>10.6 GB</td></tr><tr><th>Output size</th><td>2.06 MB</td></tr><tr><th>Output length</th><td>10.1 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div></div>
+      <h3>Comparison — 10 s</h3>
+      <div class='table-wrap'><table class='compare'><thead><tr class='group-row'><th rowspan='2' class='model-head'>Model</th><th colspan="2" class="group-lse">Lip-sync</th><th colspan="1" class="group-id">Identity</th><th colspan="2" class="group-gen">Generation</th><th colspan="4" class="group-rec">Reconstruction</th><th colspan="1" class="group-nr">No-reference</th><th colspan="3" class="group-sys">System</th></tr><tr><th>LSE-D ↓</th><th>LSE-C ↑</th><th>CSIM ↑</th><th>FID ↓</th><th>FVD ↓</th><th>SSIM ↑</th><th>PSNR ↑</th><th>LPIPS ↓</th><th>LMD ↓</th><th>NIQE ↓</th><th>Wall</th><th>RTF</th><th>VRAM</th></tr></thead><tbody><tr><td class="model-cell"><span class="badge badge-wav2lip">Wav2Lip</span></td><td class='best'>9.62</td><td class='best'>2.97</td><td class=''>0.83</td><td class=''>15.4</td><td class=''>69.3</td><td class=''>0.99</td><td class='best'>38.6</td><td class=''>0.00</td><td class='best'>0.03</td><td class=''>2.23</td><td>44.7 s</td><td>4.47x</td><td>16.1 GB</td></tr><tr><td class="model-cell"><span class="badge badge-heygem">HeyGem</span></td><td class=''>10.9</td><td class=''>1.90</td><td class=''>0.77</td><td class=''>14.8</td><td class=''>53.2</td><td class=''>0.99</td><td class=''>37.6</td><td class=''>0.00</td><td class=''>0.05</td><td class='best'>2.14</td><td>98.9 s</td><td>9.89x</td><td>24.8 GB</td></tr><tr><td class="model-cell"><span class="badge badge-musetalk">MuseTalk</span></td><td class=''>11.6</td><td class=''>1.04</td><td class=''>0.74</td><td class=''>4.80</td><td class=''>85.5</td><td class='best'>0.99</td><td class=''>37.5</td><td class='best'>0.00</td><td class=''>0.06</td><td class=''>2.17</td><td>191 s</td><td>19.1x</td><td>22.9 GB</td></tr><tr><td class="model-cell"><span class="badge badge-latentsync">LatentSync</span></td><td class=''>10.6</td><td class=''>2.26</td><td class='best'>0.88</td><td class='best'>3.81</td><td class='best'>42.7</td><td class=''>0.95</td><td class=''>30.0</td><td class=''>0.01</td><td class=''>0.09</td><td class=''>2.25</td><td>322 s</td><td>32.2x</td><td>40.2 GB</td></tr></tbody></table></div><div class='table-legend'>Green pill = best value in this comparison. ↓ lower is better · ↑ higher is better · n/a = not valid for this mode. Reconstruction metrics are only meaningful for reconstruction runs.</div>
+    </section>
+    <section id="reconstruction-15s" class="duration-block">
+      <div class="duration-head">
+        <div>
+          <span class="mode-pill reconstruction">Reconstruction</span>
+          <h2>15 s</h2>
+        </div>
+        <div class="dur-meta">marathi-demo-voice-2-recon-15s.wav · 15.0 s audio</div>
+      </div>
+      <p class="mode-note">reconstruction: the video's own audio was used; SSIM / PSNR / LPIPS / LMD are valid.</p>
+      <div class="input-row">
+        <div class="input-card">
+          <div class="input-title">📥 Input video <span>(same for all models)</span></div>
+          <video controls preload="metadata" src="videos/inputs/marathi-demo-2.mp4"></video>
+          <div class="video-meta">marathi-demo-2.mp4 · 15.02 s · 1280×720 · 24 fps</div>
+        </div>
+        <div class="audio-card">
+          <div class="input-title">🎧 Driving audio</div>
+          <div class="audio-name">marathi-demo-voice-2-recon-15s.wav</div>
+          <div class="audio-dur">15.0 s</div>
+          <p>All four models below used this exact audio file and the same input video.</p>
+        </div>
+      </div>
+      <div class="cards">
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-wav2lip">Wav2Lip</span>
+          <span class="tag">recon-15s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/wav2lip/recon-15s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 15.1 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class='best'>9.69 </td></tr><tr><th>LSE-C ↑</th><td class='best'>2.93 </td></tr><tr><th>CSIM ↑</th><td class=''>0.83 </td></tr><tr><th>FID ↓</th><td class=''>13.9 </td></tr><tr><th>FVD ↓</th><td class=''>42.8 </td></tr><tr><th>SSIM ↑</th><td class=''>0.99 </td></tr><tr><th>PSNR ↑</th><td class='best'>38.8 </td></tr><tr><th>LPIPS ↓</th><td class=''>0.00 </td></tr><tr><th>LMD ↓</th><td class='best'>0.03 </td></tr><tr><th>NIQE ↓</th><td class=''>2.31 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>58.9 s</td></tr><tr><th>RTF</th><td>3.93x</td></tr><tr><th>VRAM peak</th><td>24.4 GB</td></tr><tr><th>RAM peak</th><td>3.6 GB</td></tr><tr><th>Output size</th><td>1.90 MB</td></tr><tr><th>Output length</th><td>15.1 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-heygem">HeyGem</span>
+          <span class="tag">recon-15s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/heygem/recon-15s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 15.1 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.1 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.95 </td></tr><tr><th>CSIM ↑</th><td class=''>0.77 </td></tr><tr><th>FID ↓</th><td class=''>13.4 </td></tr><tr><th>FVD ↓</th><td class='best'>25.2 </td></tr><tr><th>SSIM ↑</th><td class=''>0.99 </td></tr><tr><th>PSNR ↑</th><td class=''>37.7 </td></tr><tr><th>LPIPS ↓</th><td class=''>0.00 </td></tr><tr><th>LMD ↓</th><td class=''>0.05 </td></tr><tr><th>NIQE ↓</th><td class='best'>2.16 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>94.5 s</td></tr><tr><th>RTF</th><td>6.30x</td></tr><tr><th>VRAM peak</th><td>14.4 GB</td></tr><tr><th>RAM peak</th><td>6.8 GB</td></tr><tr><th>Output size</th><td>5.01 MB</td></tr><tr><th>Output length</th><td>15.1 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-musetalk">MuseTalk</span>
+          <span class="tag">recon-15s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/musetalk/recon-15s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 15.1 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.8 </td></tr><tr><th>LSE-C ↑</th><td class=''>0.93 </td></tr><tr><th>CSIM ↑</th><td class=''>0.74 </td></tr><tr><th>FID ↓</th><td class=''>3.05 </td></tr><tr><th>FVD ↓</th><td class=''>49.1 </td></tr><tr><th>SSIM ↑</th><td class='best'>0.99 </td></tr><tr><th>PSNR ↑</th><td class=''>37.4 </td></tr><tr><th>LPIPS ↓</th><td class='best'>0.00 </td></tr><tr><th>LMD ↓</th><td class=''>0.06 </td></tr><tr><th>NIQE ↓</th><td class=''>2.18 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>229 s</td></tr><tr><th>RTF</th><td>15.3x</td></tr><tr><th>VRAM peak</th><td>19.7 GB</td></tr><tr><th>RAM peak</th><td>5.1 GB</td></tr><tr><th>Output size</th><td>1.69 MB</td></tr><tr><th>Output length</th><td>15.1 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-latentsync">LatentSync</span>
+          <span class="tag">recon-15s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/recon/latentsync/recon-15s.mp4"></video>
+        <div class="video-meta">1280x720 · 25.0 fps · 15.1 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>10.5 </td></tr><tr><th>LSE-C ↑</th><td class=''>2.46 </td></tr><tr><th>CSIM ↑</th><td class='best'>0.88 </td></tr><tr><th>FID ↓</th><td class='best'>2.61 </td></tr><tr><th>FVD ↓</th><td class=''>34.7 </td></tr><tr><th>SSIM ↑</th><td class=''>0.94 </td></tr><tr><th>PSNR ↑</th><td class=''>28.5 </td></tr><tr><th>LPIPS ↓</th><td class=''>0.01 </td></tr><tr><th>LMD ↓</th><td class=''>0.12 </td></tr><tr><th>NIQE ↓</th><td class=''>2.25 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>514 s</td></tr><tr><th>RTF</th><td>34.3x</td></tr><tr><th>VRAM peak</th><td>40.2 GB</td></tr><tr><th>RAM peak</th><td>10.6 GB</td></tr><tr><th>Output size</th><td>2.99 MB</td></tr><tr><th>Output length</th><td>15.1 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div></div>
+      <h3>Comparison — 15 s</h3>
+      <div class='table-wrap'><table class='compare'><thead><tr class='group-row'><th rowspan='2' class='model-head'>Model</th><th colspan="2" class="group-lse">Lip-sync</th><th colspan="1" class="group-id">Identity</th><th colspan="2" class="group-gen">Generation</th><th colspan="4" class="group-rec">Reconstruction</th><th colspan="1" class="group-nr">No-reference</th><th colspan="3" class="group-sys">System</th></tr><tr><th>LSE-D ↓</th><th>LSE-C ↑</th><th>CSIM ↑</th><th>FID ↓</th><th>FVD ↓</th><th>SSIM ↑</th><th>PSNR ↑</th><th>LPIPS ↓</th><th>LMD ↓</th><th>NIQE ↓</th><th>Wall</th><th>RTF</th><th>VRAM</th></tr></thead><tbody><tr><td class="model-cell"><span class="badge badge-wav2lip">Wav2Lip</span></td><td class='best'>9.69</td><td class='best'>2.93</td><td class=''>0.83</td><td class=''>13.9</td><td class=''>42.8</td><td class=''>0.99</td><td class='best'>38.8</td><td class=''>0.00</td><td class='best'>0.03</td><td class=''>2.31</td><td>58.9 s</td><td>3.93x</td><td>24.4 GB</td></tr><tr><td class="model-cell"><span class="badge badge-heygem">HeyGem</span></td><td class=''>11.1</td><td class=''>1.95</td><td class=''>0.77</td><td class=''>13.4</td><td class='best'>25.2</td><td class=''>0.99</td><td class=''>37.7</td><td class=''>0.00</td><td class=''>0.05</td><td class='best'>2.16</td><td>94.5 s</td><td>6.30x</td><td>14.4 GB</td></tr><tr><td class="model-cell"><span class="badge badge-musetalk">MuseTalk</span></td><td class=''>11.8</td><td class=''>0.93</td><td class=''>0.74</td><td class=''>3.05</td><td class=''>49.1</td><td class='best'>0.99</td><td class=''>37.4</td><td class='best'>0.00</td><td class=''>0.06</td><td class=''>2.18</td><td>229 s</td><td>15.3x</td><td>19.7 GB</td></tr><tr><td class="model-cell"><span class="badge badge-latentsync">LatentSync</span></td><td class=''>10.5</td><td class=''>2.46</td><td class='best'>0.88</td><td class='best'>2.61</td><td class=''>34.7</td><td class=''>0.94</td><td class=''>28.5</td><td class=''>0.01</td><td class=''>0.12</td><td class=''>2.25</td><td>514 s</td><td>34.3x</td><td>40.2 GB</td></tr></tbody></table></div><div class='table-legend'>Green pill = best value in this comparison. ↓ lower is better · ↑ higher is better · n/a = not valid for this mode. Reconstruction metrics are only meaningful for reconstruction runs.</div>
+    </section>
+
+  <div id="cross-section" class="mode-header">
+    <span class="mode-pill cross">Cross-audio / dubbing</span>
+    <div><h2>Same video + a new voice track</h2>
+      <p>TalkTwin's production case. No ground-truth frames, so reconstruction metrics are n/a.</p></div>
+  </div>
+  
+    <section id="cross-5s" class="duration-block">
+      <div class="duration-head">
+        <div>
+          <span class="mode-pill cross">Cross-audio</span>
+          <h2>5 s</h2>
+        </div>
+        <div class="dur-meta">marathi-demo-voice-2-5s.mp3 · 5.04 s audio</div>
+      </div>
+      <p class="mode-note">cross-audio / dubbing: a new voice track was used; only no-reference metrics are valid (SSIM / PSNR / LPIPS / LMD = n/a).</p>
+      <div class="input-row">
+        <div class="input-card">
+          <div class="input-title">📥 Input video <span>(same for all models)</span></div>
+          <video controls preload="metadata" src="videos/inputs/marathi-demo-2.mp4"></video>
+          <div class="video-meta">marathi-demo-2.mp4 · 15.02 s · 1280×720 · 24 fps</div>
+        </div>
+        <div class="audio-card">
+          <div class="input-title">🎧 Driving audio</div>
+          <div class="audio-name">marathi-demo-voice-2-5s.mp3</div>
+          <div class="audio-dur">5.04 s</div>
+          <p>All four models below used this exact audio file and the same input video.</p>
+        </div>
+      </div>
+      <div class="cards">
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-wav2lip">Wav2Lip</span>
+          <span class="tag">marathi-demo-2-5s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/wav2lip/marathi-demo-2-5s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 5.02 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class='best'>10.3 </td></tr><tr><th>LSE-C ↑</th><td class='best'>1.61 </td></tr><tr><th>CSIM ↑</th><td class=''>0.82 </td></tr><tr><th>FID ↓</th><td class=''>17.4 </td></tr><tr><th>FVD ↓</th><td class=''>63.3 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.24 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>26.2 s</td></tr><tr><th>RTF</th><td>5.20x</td></tr><tr><th>VRAM peak</th><td>18.5 GB</td></tr><tr><th>RAM peak</th><td>2.5 GB</td></tr><tr><th>Output size</th><td>0.68 MB</td></tr><tr><th>Output length</th><td>5.02 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-heygem">HeyGem</span>
+          <span class="tag">marathi-demo-2-5s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/heygem/marathi-demo-2-5s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 5.02 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.4 </td></tr><tr><th>LSE-C ↑</th><td class=''>0.90 </td></tr><tr><th>CSIM ↑</th><td class=''>0.76 </td></tr><tr><th>FID ↓</th><td class=''>17.3 </td></tr><tr><th>FVD ↓</th><td class='best'>58.1 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class='best'>2.12 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>46.6 s</td></tr><tr><th>RTF</th><td>9.24x</td></tr><tr><th>VRAM peak</th><td>22.0 GB</td></tr><tr><th>RAM peak</th><td>7.0 GB</td></tr><tr><th>Output size</th><td>1.78 MB</td></tr><tr><th>Output length</th><td>5.02 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-musetalk">MuseTalk</span>
+          <span class="tag">marathi-demo-2-5s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/musetalk/marathi-demo-2-5s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 5.02 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.2 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.20 </td></tr><tr><th>CSIM ↑</th><td class=''>0.73 </td></tr><tr><th>FID ↓</th><td class=''>7.99 </td></tr><tr><th>FVD ↓</th><td class=''>64.4 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.21 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>107 s</td></tr><tr><th>RTF</th><td>21.3x</td></tr><tr><th>VRAM peak</th><td>7.5 GB</td></tr><tr><th>RAM peak</th><td>5.0 GB</td></tr><tr><th>Output size</th><td>0.59 MB</td></tr><tr><th>Output length</th><td>5.02 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-latentsync">LatentSync</span>
+          <span class="tag">marathi-demo-2-5s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/latentsync/marathi-demo-2-5s.mp4"></video>
+        <div class="video-meta">1280x720 · 25.0 fps · 5.08 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>10.9 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.49 </td></tr><tr><th>CSIM ↑</th><td class='best'>0.88 </td></tr><tr><th>FID ↓</th><td class='best'>6.78 </td></tr><tr><th>FVD ↓</th><td class=''>59.0 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.17 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>145 s</td></tr><tr><th>RTF</th><td>28.9x</td></tr><tr><th>VRAM peak</th><td>16.9 GB</td></tr><tr><th>RAM peak</th><td>9.8 GB</td></tr><tr><th>Output size</th><td>1.04 MB</td></tr><tr><th>Output length</th><td>5.08 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div></div>
+      <h3>Comparison — 5 s</h3>
+      <div class='table-wrap'><table class='compare'><thead><tr class='group-row'><th rowspan='2' class='model-head'>Model</th><th colspan="2" class="group-lse">Lip-sync</th><th colspan="1" class="group-id">Identity</th><th colspan="2" class="group-gen">Generation</th><th colspan="4" class="group-rec">Reconstruction</th><th colspan="1" class="group-nr">No-reference</th><th colspan="3" class="group-sys">System</th></tr><tr><th>LSE-D ↓</th><th>LSE-C ↑</th><th>CSIM ↑</th><th>FID ↓</th><th>FVD ↓</th><th>SSIM ↑</th><th>PSNR ↑</th><th>LPIPS ↓</th><th>LMD ↓</th><th>NIQE ↓</th><th>Wall</th><th>RTF</th><th>VRAM</th></tr></thead><tbody><tr><td class="model-cell"><span class="badge badge-wav2lip">Wav2Lip</span></td><td class='best'>10.3</td><td class='best'>1.61</td><td class=''>0.82</td><td class=''>17.4</td><td class=''>63.3</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.24</td><td>26.2 s</td><td>5.20x</td><td>18.5 GB</td></tr><tr><td class="model-cell"><span class="badge badge-heygem">HeyGem</span></td><td class=''>11.4</td><td class=''>0.90</td><td class=''>0.76</td><td class=''>17.3</td><td class='best'>58.1</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='best'>2.12</td><td>46.6 s</td><td>9.24x</td><td>22.0 GB</td></tr><tr><td class="model-cell"><span class="badge badge-musetalk">MuseTalk</span></td><td class=''>11.2</td><td class=''>1.20</td><td class=''>0.73</td><td class=''>7.99</td><td class=''>64.4</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.21</td><td>107 s</td><td>21.3x</td><td>7.5 GB</td></tr><tr><td class="model-cell"><span class="badge badge-latentsync">LatentSync</span></td><td class=''>10.9</td><td class=''>1.49</td><td class='best'>0.88</td><td class='best'>6.78</td><td class=''>59.0</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.17</td><td>145 s</td><td>28.9x</td><td>16.9 GB</td></tr></tbody></table></div><div class='table-legend'>Green pill = best value in this comparison. ↓ lower is better · ↑ higher is better · n/a = not valid for this mode. Reconstruction metrics are only meaningful for reconstruction runs.</div>
+    </section>
+    <section id="cross-10s" class="duration-block">
+      <div class="duration-head">
+        <div>
+          <span class="mode-pill cross">Cross-audio</span>
+          <h2>10 s</h2>
+        </div>
+        <div class="dur-meta">marathi-demo-voice-2-10s.mp3 · 10.0 s audio</div>
+      </div>
+      <p class="mode-note">cross-audio / dubbing: a new voice track was used; only no-reference metrics are valid (SSIM / PSNR / LPIPS / LMD = n/a).</p>
+      <div class="input-row">
+        <div class="input-card">
+          <div class="input-title">📥 Input video <span>(same for all models)</span></div>
+          <video controls preload="metadata" src="videos/inputs/marathi-demo-2.mp4"></video>
+          <div class="video-meta">marathi-demo-2.mp4 · 15.02 s · 1280×720 · 24 fps</div>
+        </div>
+        <div class="audio-card">
+          <div class="input-title">🎧 Driving audio</div>
+          <div class="audio-name">marathi-demo-voice-2-10s.mp3</div>
+          <div class="audio-dur">10.0 s</div>
+          <p>All four models below used this exact audio file and the same input video.</p>
+        </div>
+      </div>
+      <div class="cards">
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-wav2lip">Wav2Lip</span>
+          <span class="tag">marathi-demo-2-10s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/wav2lip/marathi-demo-2-10s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 10.0 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class='best'>10.8 </td></tr><tr><th>LSE-C ↑</th><td class='best'>1.74 </td></tr><tr><th>CSIM ↑</th><td class=''>0.82 </td></tr><tr><th>FID ↓</th><td class=''>15.2 </td></tr><tr><th>FVD ↓</th><td class=''>84.2 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.19 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>45.0 s</td></tr><tr><th>RTF</th><td>4.49x</td></tr><tr><th>VRAM peak</th><td>21.3 GB</td></tr><tr><th>RAM peak</th><td>3.3 GB</td></tr><tr><th>Output size</th><td>1.29 MB</td></tr><tr><th>Output length</th><td>10.0 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-heygem">HeyGem</span>
+          <span class="tag">marathi-demo-2-10s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/heygem/marathi-demo-2-10s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 10.0 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>12.1 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.07 </td></tr><tr><th>CSIM ↑</th><td class=''>0.77 </td></tr><tr><th>FID ↓</th><td class=''>14.9 </td></tr><tr><th>FVD ↓</th><td class='best'>63.1 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class='best'>2.13 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>62.2 s</td></tr><tr><th>RTF</th><td>6.20x</td></tr><tr><th>VRAM peak</th><td>16.1 GB</td></tr><tr><th>RAM peak</th><td>6.9 GB</td></tr><tr><th>Output size</th><td>3.39 MB</td></tr><tr><th>Output length</th><td>10.0 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-musetalk">MuseTalk</span>
+          <span class="tag">marathi-demo-2-10s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/musetalk/marathi-demo-2-10s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 10.0 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>12.5 </td></tr><tr><th>LSE-C ↑</th><td class=''>0.70 </td></tr><tr><th>CSIM ↑</th><td class=''>0.73 </td></tr><tr><th>FID ↓</th><td class=''>4.82 </td></tr><tr><th>FVD ↓</th><td class=''>79.7 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.25 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>130 s</td></tr><tr><th>RTF</th><td>12.9x</td></tr><tr><th>VRAM peak</th><td>7.5 GB</td></tr><tr><th>RAM peak</th><td>4.9 GB</td></tr><tr><th>Output size</th><td>1.16 MB</td></tr><tr><th>Output length</th><td>10.0 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-latentsync">LatentSync</span>
+          <span class="tag">marathi-demo-2-10s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/latentsync/marathi-demo-2-10s.mp4"></video>
+        <div class="video-meta">1280x720 · 25.0 fps · 10.1 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.6 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.63 </td></tr><tr><th>CSIM ↑</th><td class='best'>0.88 </td></tr><tr><th>FID ↓</th><td class='best'>4.07 </td></tr><tr><th>FVD ↓</th><td class=''>64.1 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.29 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>264 s</td></tr><tr><th>RTF</th><td>26.4x</td></tr><tr><th>VRAM peak</th><td>19.9 GB</td></tr><tr><th>RAM peak</th><td>10.6 GB</td></tr><tr><th>Output size</th><td>2.07 MB</td></tr><tr><th>Output length</th><td>10.1 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div></div>
+      <h3>Comparison — 10 s</h3>
+      <div class='table-wrap'><table class='compare'><thead><tr class='group-row'><th rowspan='2' class='model-head'>Model</th><th colspan="2" class="group-lse">Lip-sync</th><th colspan="1" class="group-id">Identity</th><th colspan="2" class="group-gen">Generation</th><th colspan="4" class="group-rec">Reconstruction</th><th colspan="1" class="group-nr">No-reference</th><th colspan="3" class="group-sys">System</th></tr><tr><th>LSE-D ↓</th><th>LSE-C ↑</th><th>CSIM ↑</th><th>FID ↓</th><th>FVD ↓</th><th>SSIM ↑</th><th>PSNR ↑</th><th>LPIPS ↓</th><th>LMD ↓</th><th>NIQE ↓</th><th>Wall</th><th>RTF</th><th>VRAM</th></tr></thead><tbody><tr><td class="model-cell"><span class="badge badge-wav2lip">Wav2Lip</span></td><td class='best'>10.8</td><td class='best'>1.74</td><td class=''>0.82</td><td class=''>15.2</td><td class=''>84.2</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.19</td><td>45.0 s</td><td>4.49x</td><td>21.3 GB</td></tr><tr><td class="model-cell"><span class="badge badge-heygem">HeyGem</span></td><td class=''>12.1</td><td class=''>1.07</td><td class=''>0.77</td><td class=''>14.9</td><td class='best'>63.1</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='best'>2.13</td><td>62.2 s</td><td>6.20x</td><td>16.1 GB</td></tr><tr><td class="model-cell"><span class="badge badge-musetalk">MuseTalk</span></td><td class=''>12.5</td><td class=''>0.70</td><td class=''>0.73</td><td class=''>4.82</td><td class=''>79.7</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.25</td><td>130 s</td><td>12.9x</td><td>7.5 GB</td></tr><tr><td class="model-cell"><span class="badge badge-latentsync">LatentSync</span></td><td class=''>11.6</td><td class=''>1.63</td><td class='best'>0.88</td><td class='best'>4.07</td><td class=''>64.1</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.29</td><td>264 s</td><td>26.4x</td><td>19.9 GB</td></tr></tbody></table></div><div class='table-legend'>Green pill = best value in this comparison. ↓ lower is better · ↑ higher is better · n/a = not valid for this mode. Reconstruction metrics are only meaningful for reconstruction runs.</div>
+    </section>
+    <section id="cross-20s" class="duration-block">
+      <div class="duration-head">
+        <div>
+          <span class="mode-pill cross">Cross-audio</span>
+          <h2>20 s</h2>
+        </div>
+        <div class="dur-meta">marathi-demo-voice-2-20s.mp3 · 20.0 s audio</div>
+      </div>
+      <p class="mode-note">cross-audio / dubbing: a new voice track was used; only no-reference metrics are valid (SSIM / PSNR / LPIPS / LMD = n/a).</p>
+      <div class="input-row">
+        <div class="input-card">
+          <div class="input-title">📥 Input video <span>(same for all models)</span></div>
+          <video controls preload="metadata" src="videos/inputs/marathi-demo-2.mp4"></video>
+          <div class="video-meta">marathi-demo-2.mp4 · 15.02 s · 1280×720 · 24 fps</div>
+        </div>
+        <div class="audio-card">
+          <div class="input-title">🎧 Driving audio</div>
+          <div class="audio-name">marathi-demo-voice-2-20s.mp3</div>
+          <div class="audio-dur">20.0 s</div>
+          <p>All four models below used this exact audio file and the same input video.</p>
+        </div>
+      </div>
+      <div class="cards">
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-wav2lip">Wav2Lip</span>
+          <span class="tag">marathi-demo-2-20s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/wav2lip/marathi-demo-2-20s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 20.0 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class='best'>10.3 </td></tr><tr><th>LSE-C ↑</th><td class='best'>2.11 </td></tr><tr><th>CSIM ↑</th><td class=''>0.82 </td></tr><tr><th>FID ↓</th><td class=''>14.4 </td></tr><tr><th>FVD ↓</th><td class=''>64.2 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.23 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>47.2 s</td></tr><tr><th>RTF</th><td>2.36x</td></tr><tr><th>VRAM peak</th><td>18.5 GB</td></tr><tr><th>RAM peak</th><td>3.7 GB</td></tr><tr><th>Output size</th><td>2.59 MB</td></tr><tr><th>Output length</th><td>20.0 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-heygem">HeyGem</span>
+          <span class="tag">marathi-demo-2-20s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/heygem/marathi-demo-2-20s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 20.0 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.5 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.46 </td></tr><tr><th>CSIM ↑</th><td class=''>0.77 </td></tr><tr><th>FID ↓</th><td class=''>13.9 </td></tr><tr><th>FVD ↓</th><td class=''>52.6 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class='best'>2.16 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>69.8 s</td></tr><tr><th>RTF</th><td>3.48x</td></tr><tr><th>VRAM peak</th><td>17.4 GB</td></tr><tr><th>RAM peak</th><td>6.9 GB</td></tr><tr><th>Output size</th><td>6.75 MB</td></tr><tr><th>Output length</th><td>20.0 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-musetalk">MuseTalk</span>
+          <span class="tag">marathi-demo-2-20s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/musetalk/marathi-demo-2-20s.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 20.0 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>12.0 </td></tr><tr><th>LSE-C ↑</th><td class=''>0.82 </td></tr><tr><th>CSIM ↑</th><td class=''>0.73 </td></tr><tr><th>FID ↓</th><td class=''>3.37 </td></tr><tr><th>FVD ↓</th><td class=''>49.5 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.18 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>162 s</td></tr><tr><th>RTF</th><td>8.06x</td></tr><tr><th>VRAM peak</th><td>7.5 GB</td></tr><tr><th>RAM peak</th><td>4.7 GB</td></tr><tr><th>Output size</th><td>2.23 MB</td></tr><tr><th>Output length</th><td>20.0 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-latentsync">LatentSync</span>
+          <span class="tag">marathi-demo-2-20s</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/cross/latentsync/marathi-demo-2-20s.mp4"></video>
+        <div class="video-meta">1280x720 · 25.0 fps · 20.1 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.1 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.81 </td></tr><tr><th>CSIM ↑</th><td class='best'>0.88 </td></tr><tr><th>FID ↓</th><td class='best'>2.87 </td></tr><tr><th>FVD ↓</th><td class='best'>44.7 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.26 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>475 s</td></tr><tr><th>RTF</th><td>23.7x</td></tr><tr><th>VRAM peak</th><td>19.9 GB</td></tr><tr><th>RAM peak</th><td>9.4 GB</td></tr><tr><th>Output size</th><td>3.96 MB</td></tr><tr><th>Output length</th><td>20.1 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div></div>
+      <h3>Comparison — 20 s</h3>
+      <div class='table-wrap'><table class='compare'><thead><tr class='group-row'><th rowspan='2' class='model-head'>Model</th><th colspan="2" class="group-lse">Lip-sync</th><th colspan="1" class="group-id">Identity</th><th colspan="2" class="group-gen">Generation</th><th colspan="4" class="group-rec">Reconstruction</th><th colspan="1" class="group-nr">No-reference</th><th colspan="3" class="group-sys">System</th></tr><tr><th>LSE-D ↓</th><th>LSE-C ↑</th><th>CSIM ↑</th><th>FID ↓</th><th>FVD ↓</th><th>SSIM ↑</th><th>PSNR ↑</th><th>LPIPS ↓</th><th>LMD ↓</th><th>NIQE ↓</th><th>Wall</th><th>RTF</th><th>VRAM</th></tr></thead><tbody><tr><td class="model-cell"><span class="badge badge-wav2lip">Wav2Lip</span></td><td class='best'>10.3</td><td class='best'>2.11</td><td class=''>0.82</td><td class=''>14.4</td><td class=''>64.2</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.23</td><td>47.2 s</td><td>2.36x</td><td>18.5 GB</td></tr><tr><td class="model-cell"><span class="badge badge-heygem">HeyGem</span></td><td class=''>11.5</td><td class=''>1.46</td><td class=''>0.77</td><td class=''>13.9</td><td class=''>52.6</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='best'>2.16</td><td>69.8 s</td><td>3.48x</td><td>17.4 GB</td></tr><tr><td class="model-cell"><span class="badge badge-musetalk">MuseTalk</span></td><td class=''>12.0</td><td class=''>0.82</td><td class=''>0.73</td><td class=''>3.37</td><td class=''>49.5</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.18</td><td>162 s</td><td>8.06x</td><td>7.5 GB</td></tr><tr><td class="model-cell"><span class="badge badge-latentsync">LatentSync</span></td><td class=''>11.1</td><td class=''>1.81</td><td class='best'>0.88</td><td class='best'>2.87</td><td class='best'>44.7</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.26</td><td>475 s</td><td>23.7x</td><td>19.9 GB</td></tr></tbody></table></div><div class='table-legend'>Green pill = best value in this comparison. ↓ lower is better · ↑ higher is better · n/a = not valid for this mode. Reconstruction metrics are only meaningful for reconstruction runs.</div>
+    </section>
+    <section id="cross-64.5s1min" class="duration-block">
+      <div class="duration-head">
+        <div>
+          <span class="mode-pill cross">Cross-audio</span>
+          <h2>64.5 s (1 min)</h2>
+        </div>
+        <div class="dur-meta">marathi-demo-voice-2.mp3 · 64.5 s audio</div>
+      </div>
+      <p class="mode-note">cross-audio / dubbing: a new voice track was used; only no-reference metrics are valid (SSIM / PSNR / LPIPS / LMD = n/a).</p>
+      <div class="input-row">
+        <div class="input-card">
+          <div class="input-title">📥 Input video <span>(same for all models)</span></div>
+          <video controls preload="metadata" src="videos/inputs/marathi-demo-2.mp4"></video>
+          <div class="video-meta">marathi-demo-2.mp4 · 15.02 s · 1280×720 · 24 fps</div>
+        </div>
+        <div class="audio-card">
+          <div class="input-title">🎧 Driving audio</div>
+          <div class="audio-name">marathi-demo-voice-2.mp3</div>
+          <div class="audio-dur">64.5 s</div>
+          <p>All four models below used this exact audio file and the same input video.</p>
+        </div>
+      </div>
+      <div class="cards">
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-wav2lip">Wav2Lip</span>
+          <span class="tag">marathi-demo-2</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/long/wav2lip/marathi-demo-2.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 64.5 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class='best'>10.3 </td></tr><tr><th>LSE-C ↑</th><td class='best'>2.46 </td></tr><tr><th>CSIM ↑</th><td class=''>0.83 </td></tr><tr><th>FID ↓</th><td class=''>14.0 </td></tr><tr><th>FVD ↓</th><td class=''>71.6 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.24 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>59.8 s</td></tr><tr><th>RTF</th><td>0.93x</td></tr><tr><th>VRAM peak</th><td>18.5 GB</td></tr><tr><th>RAM peak</th><td>3.7 GB</td></tr><tr><th>Output size</th><td>8.39 MB</td></tr><tr><th>Output length</th><td>64.5 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-heygem">HeyGem</span>
+          <span class="tag">marathi-demo-2</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/long/heygem/marathi-demo-2.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 64.5 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.9 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.55 </td></tr><tr><th>CSIM ↑</th><td class=''>0.77 </td></tr><tr><th>FID ↓</th><td class=''>13.4 </td></tr><tr><th>FVD ↓</th><td class='best'>42.9 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class='best'>2.16 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>141 s</td></tr><tr><th>RTF</th><td>2.19x</td></tr><tr><th>VRAM peak</th><td>15.0 GB</td></tr><tr><th>RAM peak</th><td>7.1 GB</td></tr><tr><th>Output size</th><td>21.7 MB</td></tr><tr><th>Output length</th><td>64.5 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-musetalk">MuseTalk</span>
+          <span class="tag">marathi-demo-2</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/long/musetalk/marathi-demo-2.mp4"></video>
+        <div class="video-meta">1280x720 · 24.0 fps · 64.5 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>12.4 </td></tr><tr><th>LSE-C ↑</th><td class=''>0.73 </td></tr><tr><th>CSIM ↑</th><td class=''>0.73 </td></tr><tr><th>FID ↓</th><td class=''>3.42 </td></tr><tr><th>FVD ↓</th><td class=''>52.3 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.19 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>320 s</td></tr><tr><th>RTF</th><td>4.95x</td></tr><tr><th>VRAM peak</th><td>7.5 GB</td></tr><tr><th>RAM peak</th><td>5.1 GB</td></tr><tr><th>Output size</th><td>7.44 MB</td></tr><tr><th>Output length</th><td>64.5 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="badge badge-latentsync">LatentSync</span>
+          <span class="tag">marathi-demo-2</span>
+          <span class="status completed">COMPLETED</span>
+        </div>
+        <video controls preload="metadata" src="videos/long/latentsync/marathi-demo-2.mp4"></video>
+        <div class="video-meta">1280x720 · 25.0 fps · 64.6 s</div>
+        <table class="stats">
+          <tbody>
+            <tr class="group-row"><th colspan="2">Quality</th></tr><tr><th>LSE-D ↓</th><td class=''>11.2 </td></tr><tr><th>LSE-C ↑</th><td class=''>1.98 </td></tr><tr><th>CSIM ↑</th><td class='best'>0.87 </td></tr><tr><th>FID ↓</th><td class='best'>2.79 </td></tr><tr><th>FVD ↓</th><td class=''>60.7 </td></tr><tr><th>SSIM ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>PSNR ↑</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LPIPS ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>LMD ↓</th><td class='na' title='not valid for cross-audio'>n/a</td></tr><tr><th>NIQE ↓</th><td class=''>2.24 </td></tr><tr><th>MOS (1–5)</th><td class='manual'>manual</td></tr>
+            <tr class="group-row"><th colspan="2">System</th></tr><tr><th>Wall</th><td>1446 s</td></tr><tr><th>RTF</th><td>22.4x</td></tr><tr><th>VRAM peak</th><td>19.9 GB</td></tr><tr><th>RAM peak</th><td>18.8 GB</td></tr><tr><th>Output size</th><td>13.1 MB</td></tr><tr><th>Output length</th><td>64.6 s</td></tr>
+          </tbody>
+        </table>
+        
+      </div></div>
+      <h3>Comparison — 64.5 s (1 min)</h3>
+      <div class='table-wrap'><table class='compare'><thead><tr class='group-row'><th rowspan='2' class='model-head'>Model</th><th colspan="2" class="group-lse">Lip-sync</th><th colspan="1" class="group-id">Identity</th><th colspan="2" class="group-gen">Generation</th><th colspan="4" class="group-rec">Reconstruction</th><th colspan="1" class="group-nr">No-reference</th><th colspan="3" class="group-sys">System</th></tr><tr><th>LSE-D ↓</th><th>LSE-C ↑</th><th>CSIM ↑</th><th>FID ↓</th><th>FVD ↓</th><th>SSIM ↑</th><th>PSNR ↑</th><th>LPIPS ↓</th><th>LMD ↓</th><th>NIQE ↓</th><th>Wall</th><th>RTF</th><th>VRAM</th></tr></thead><tbody><tr><td class="model-cell"><span class="badge badge-wav2lip">Wav2Lip</span></td><td class='best'>10.3</td><td class='best'>2.46</td><td class=''>0.83</td><td class=''>14.0</td><td class=''>71.6</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.24</td><td>59.8 s</td><td>0.93x</td><td>18.5 GB</td></tr><tr><td class="model-cell"><span class="badge badge-heygem">HeyGem</span></td><td class=''>11.9</td><td class=''>1.55</td><td class=''>0.77</td><td class=''>13.4</td><td class='best'>42.9</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='best'>2.16</td><td>141 s</td><td>2.19x</td><td>15.0 GB</td></tr><tr><td class="model-cell"><span class="badge badge-musetalk">MuseTalk</span></td><td class=''>12.4</td><td class=''>0.73</td><td class=''>0.73</td><td class=''>3.42</td><td class=''>52.3</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.19</td><td>320 s</td><td>4.95x</td><td>7.5 GB</td></tr><tr><td class="model-cell"><span class="badge badge-latentsync">LatentSync</span></td><td class=''>11.2</td><td class=''>1.98</td><td class='best'>0.87</td><td class='best'>2.79</td><td class=''>60.7</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class='na' title='not valid for cross-audio'>n/a</td><td class=''>2.24</td><td>1446 s</td><td>22.4x</td><td>19.9 GB</td></tr></tbody></table></div><div class='table-legend'>Green pill = best value in this comparison. ↓ lower is better · ↑ higher is better · n/a = not valid for this mode. Reconstruction metrics are only meaningful for reconstruction runs.</div>
+    </section>
+
+  <footer>
+    Generated from benchmark report data · videos are linked relatively next to this HTML file ·
+    MOS remains manual by design.
+  </footer>
+</div>
+</body>
+</html>
