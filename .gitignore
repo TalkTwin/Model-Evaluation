@@ -6,7 +6,7 @@
 *.mkv
 
 # Exception: videos needed for GitHub Pages
-!docs/videos/**/*.mp4
+!videos/**/*.mp4
 
 # Python
 __pycache__/
