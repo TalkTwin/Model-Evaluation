@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marathi TTS Benchmark — OmniVoice</title>
+<title>Marathi TTS Benchmark — OmniVoice vs IndicF5</title>
 <style>
 :root{--bg:#f5f7fa;--card:#fff;--ink:#22303f;--muted:#65758b;--line:#dfe6ee;
 --blue:#2563eb;--violet:#7c3aed;--green:#15803d;--amber:#b45309;--soft:#eef2f7}
@@ -55,14 +55,14 @@ footer{text-align:center;color:var(--muted);font-size:.78rem;padding:26px 0 6px}
 a{color:var(--blue)}
 </style></head><body><div class="wrap">
 <header class="hero">
-  <h1>🗣️ Marathi TTS Benchmark — OmniVoice</h1>
+  <h1>🗣️ Marathi TTS Benchmark — OmniVoice vs IndicF5</h1>
   <p>Zero-shot voice cloning on Marathi text · system speed, speaker similarity, intelligibility and predicted MOS</p>
 </header>
 <div class="meta">
   <span><b>Reference:</b> ref_24k.wav · 9.24 s</span>
   <span><b>Texts:</b> 4 prompts</span>
-  <span><b>Models:</b> 1</span>
-  <span><b>GPU:</b> NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb</span>
+  <span><b>Models:</b> 2</span>
+  <span><b>GPU:</b> NVIDIA H200 NVL MIG 1g.18gb</span>
 </div>
 <div class="cards">
 
@@ -70,18 +70,27 @@ a{color:var(--blue)}
     <h2>OmniVoice <span class="badge v">omnivoice</span></h2>
     <div class="sub">num_step 32 · seed 1234 · warmup</div>
     <div class="kpis">
-      <div class="kpi"><div class="v">0.769</div><div class="k">Speaker sim (CSIM) ↑</div></div>
-      <div class="kpi"><div class="v">62.9%</div><div class="k">WER ↓</div></div>
-      <div class="kpi"><div class="v">3.64</div><div class="k">DNSMOS-OVRL ↑</div></div>
-      <div class="kpi"><div class="v">0.26×</div><div class="k">RTF ↓</div></div>
-      <div class="kpi"><div class="v">2.18 GiB</div><div class="k">Peak VRAM</div></div>
-      <div class="kpi"><div class="v">1.2 s</div><div class="k">Model load</div></div>
+      <div class="kpi"><div class="v">0.784</div><div class="k">Speaker sim (CSIM) ↑</div></div>
+      <div class="kpi"><div class="v">68.1%</div><div class="k">WER ↓</div></div>
+      <div class="kpi"><div class="v">3.45</div><div class="k">DNSMOS-OVRL ↑</div></div>
+      <div class="kpi"><div class="v">0.35×</div><div class="k">RTF ↓</div></div>
+      <div class="kpi"><div class="v">2.15 GiB</div><div class="k">Peak VRAM</div></div>
+      <div class="kpi"><div class="v">15.6 s</div><div class="k">Model load</div></div>
     </div>
   </div>
-</div>
-<div class="notes" style="margin-top:0;margin-bottom:18px">
-<b>IndicF5 pending.</b> IndicF5 weights are behind a gated Hugging Face repo; the model will be added
-to this comparison as soon as access is granted and the run completes. All numbers below are OmniVoice only.
+
+  <div class="card" style="border-top:4px solid #2563eb">
+    <h2>IndicF5 <span class="badge b">indicf5</span></h2>
+    <div class="sub">seed 1234 · warmup</div>
+    <div class="kpis">
+      <div class="kpi"><div class="v">0.809</div><div class="k">Speaker sim (CSIM) ↑</div></div>
+      <div class="kpi"><div class="v">49.9%</div><div class="k">WER ↓</div></div>
+      <div class="kpi"><div class="v">3.83</div><div class="k">DNSMOS-OVRL ↑</div></div>
+      <div class="kpi"><div class="v">1.97×</div><div class="k">RTF ↓</div></div>
+      <div class="kpi"><div class="v">2.62 GiB</div><div class="k">Peak VRAM</div></div>
+      <div class="kpi"><div class="v">24.4 s</div><div class="k">Model load</div></div>
+    </div>
+  </div>
 </div>
 <h2 class="section">Overall comparison</h2>
 <div class="tablebox"><table><thead><tr>
@@ -90,14 +99,26 @@ to this comparison as soon as access is granted and the run completes. All numbe
 </tr></thead><tbody>
 <tr>
 <td class="model">OmniVoice</td>
-<td><span class="">1.2</span></td>
-<td><span class="">0.26</span></td>
-<td>2.18 GiB</td>
-<td><span class="">0.769</span></td>
-<td><span class="">0.629</span></td>
-<td><span class="">0.262</span></td>
-<td><span class="">3.64</span></td>
-<td>254.3</td>
+<td><span class="best">15.6</span></td>
+<td><span class="best">0.35</span></td>
+<td>2.15 GiB</td>
+<td><span class="">0.784</span></td>
+<td><span class="">0.681</span></td>
+<td><span class="">0.256</span></td>
+<td><span class="">3.45</span></td>
+<td>243.3</td>
+<td class="na">—</td>
+</tr>
+<tr>
+<td class="model">IndicF5</td>
+<td><span class="">24.4</span></td>
+<td><span class="">1.97</span></td>
+<td>2.62 GiB</td>
+<td><span class="best">0.809</span></td>
+<td><span class="best">0.499</span></td>
+<td><span class="best">0.156</span></td>
+<td><span class="best">3.83</span></td>
+<td>224.5</td>
 <td class="na">—</td>
 </tr>
 </tbody></table></div>
@@ -110,49 +131,93 @@ to this comparison as soon as access is granted and the run completes. All numbe
 <tr>
 <td class="model">OmniVoice</td>
 <td><audio controls preload="none" style="width:180px" src="tts_audio/omnivoice/short_01.mp3"></audio></td>
-<td>39.06</td>
-<td><span class="">0.40</span></td>
+<td>29.27</td>
+<td><span class="best">0.53</span></td>
 <td><span class="">0.556</span></td>
-<td><span class="">0.170</span></td>
-<td><span class="">0.703</span></td>
-<td><span class="">3.50</span></td>
-<td>278.4</td>
+<td><span class="best">0.170</span></td>
+<td><span class="best">0.746</span></td>
+<td><span class="">2.83</span></td>
+<td>241.5</td>
+</tr>
+<tr>
+<td class="model">IndicF5</td>
+<td><audio controls preload="none" style="width:180px" src="tts_audio/indicf5/short_01.mp3"></audio></td>
+<td>4.73</td>
+<td><span class="">2.72</span></td>
+<td><span class="best">0.444</span></td>
+<td><span class="best">0.170</span></td>
+<td><span class="">0.732</span></td>
+<td><span class="best">3.58</span></td>
+<td>228.5</td>
 </tr>
 <tr class="group"><td colspan="9">Medium (~25 words) — medium_02</td></tr>
 <tr>
 <td class="model">OmniVoice</td>
 <td><audio controls preload="none" style="width:180px" src="tts_audio/omnivoice/medium_02.mp3"></audio></td>
-<td>63.34</td>
-<td><span class="">0.25</span></td>
-<td><span class="">0.316</span></td>
-<td><span class="">0.091</span></td>
-<td><span class="">0.778</span></td>
-<td><span class="">3.70</span></td>
-<td>262.7</td>
+<td>48.18</td>
+<td><span class="best">0.34</span></td>
+<td><span class="">0.579</span></td>
+<td><span class="">0.139</span></td>
+<td><span class="">0.756</span></td>
+<td><span class="">3.50</span></td>
+<td>257.0</td>
+</tr>
+<tr>
+<td class="model">IndicF5</td>
+<td><audio controls preload="none" style="width:180px" src="tts_audio/indicf5/medium_02.mp3"></audio></td>
+<td>7.18</td>
+<td><span class="">1.76</span></td>
+<td><span class="best">0.421</span></td>
+<td><span class="best">0.111</span></td>
+<td><span class="best">0.859</span></td>
+<td><span class="best">3.98</span></td>
+<td>219.7</td>
 </tr>
 <tr class="group"><td colspan="9">Long (~50 words) — long_03</td></tr>
 <tr>
 <td class="model">OmniVoice</td>
 <td><audio controls preload="none" style="width:180px" src="tts_audio/omnivoice/long_03.mp3"></audio></td>
-<td>83.70</td>
-<td><span class="">0.17</span></td>
-<td><span class="">0.706</span></td>
-<td><span class="">0.310</span></td>
-<td><span class="">0.804</span></td>
-<td><span class="">3.62</span></td>
-<td>236.9</td>
+<td>60.75</td>
+<td><span class="best">0.24</span></td>
+<td><span class="">0.732</span></td>
+<td><span class="">0.391</span></td>
+<td><span class="">0.827</span></td>
+<td><span class="">3.69</span></td>
+<td>242.3</td>
+</tr>
+<tr>
+<td class="model">IndicF5</td>
+<td><audio controls preload="none" style="width:180px" src="tts_audio/indicf5/long_03.mp3"></audio></td>
+<td>7.56</td>
+<td><span class="">1.66</span></td>
+<td><span class="best">0.463</span></td>
+<td><span class="best">0.111</span></td>
+<td><span class="best">0.841</span></td>
+<td><span class="best">3.70</span></td>
+<td>232.4</td>
 </tr>
 <tr class="group"><td colspan="9">Numbers &amp; names — numbers_04</td></tr>
 <tr>
 <td class="model">OmniVoice</td>
 <td><audio controls preload="none" style="width:180px" src="tts_audio/omnivoice/numbers_04.mp3"></audio></td>
-<td>54.36</td>
-<td><span class="">0.22</span></td>
-<td><span class="">0.938</span></td>
-<td><span class="">0.478</span></td>
-<td><span class="">0.792</span></td>
-<td><span class="">3.76</span></td>
-<td>239.2</td>
+<td>46.80</td>
+<td><span class="best">0.27</span></td>
+<td><span class="">0.857</span></td>
+<td><span class="">0.325</span></td>
+<td><span class="best">0.807</span></td>
+<td><span class="">3.77</span></td>
+<td>232.6</td>
+</tr>
+<tr>
+<td class="model">IndicF5</td>
+<td><audio controls preload="none" style="width:180px" src="tts_audio/indicf5/numbers_04.mp3"></audio></td>
+<td>7.22</td>
+<td><span class="">1.75</span></td>
+<td><span class="best">0.667</span></td>
+<td><span class="best">0.230</span></td>
+<td><span class="">0.805</span></td>
+<td><span class="best">4.08</span></td>
+<td>217.6</td>
 </tr>
 </tbody></table></div>
 <div class="notes" style="background:#fffbeb;border-left-color:#b45309;color:#78350f">
@@ -169,82 +234,131 @@ than raw WER.
 </div>
 <h3 style="font-size:1rem;margin:20px 0 8px">Short (~10 words)
         <span class="small">· short_01 · 49 chars</span></h3>
-        <div class="small" style="margin-bottom:8px">नमस्कार, माझं नाव आर्यन आहे आणि मी पुण्यात राहतो.</div>
+        <div class="small" style="margin-bottom:8px">नमस्कार, माझं नाव आर्या आहे आणि मी पुण्यात राहते.</div>
         <div class="grid2">
 <div class="sample">
   <div class="head"><span class="name">OmniVoice</span>
-  <span class="badge v">3.12 s</span></div>
+  <span class="badge v">3.16 s</span></div>
   <audio controls preload="metadata" src="tts_audio/omnivoice/short_01.mp3"></audio>
-  <div class="small" style="margin-top:6px">RTF 0.40 · CSIM 0.703 ·
-  WER 55.6% · DNSMOS-OVRL 3.50</div>
-  <details><summary>ASR transcript</summary><div class="hyp">नमस्कार माझा नाव आर्यान है और मी पुण्यात रहतो</div></details>
+  <div class="small" style="margin-top:6px">RTF 0.53 · CSIM 0.746 ·
+  WER 55.6% · DNSMOS-OVRL 2.83</div>
+  <details><summary>ASR transcript</summary><div class="hyp">नमस्कार माझा नाव आर्या है और मी पुन्यात राते</div></details>
+</div>
+<div class="sample">
+  <div class="head"><span class="name">IndicF5</span>
+  <span class="badge b">3.81 s</span></div>
+  <audio controls preload="metadata" src="tts_audio/indicf5/short_01.mp3"></audio>
+  <div class="small" style="margin-top:6px">RTF 2.72 · CSIM 0.732 ·
+  WER 44.4% · DNSMOS-OVRL 3.58</div>
+  <details><summary>ASR transcript</summary><div class="hyp">नमस्कार, माझा नाव आर्या है और मी पुण्यात रहते।</div></details>
 </div>
 </div>
 <h3 style="font-size:1rem;margin:20px 0 8px">Medium (~25 words)
-        <span class="small">· medium_02 · 101 chars</span></h3>
-        <div class="small" style="margin-bottom:8px">आज सकाळी मी बागेत फिरायला गेलो होतो. तिथे मला माझे जुने मित्र भेटले आणि आम्ही बराच वेळ गप्पा मारल्या.</div>
+        <span class="small">· medium_02 · 110 chars</span></h3>
+        <div class="small" style="margin-bottom:8px">आज सकाळी मी बागेत फिरायला गेले होते. तिथे मला माझ्या जुन्या मैत्रिणी भेटल्या आणि आम्ही बराच वेळ गप्पा मारल्या.</div>
         <div class="grid2">
 <div class="sample">
   <div class="head"><span class="name">OmniVoice</span>
-  <span class="badge v">6.34 s</span></div>
+  <span class="badge v">6.72 s</span></div>
   <audio controls preload="metadata" src="tts_audio/omnivoice/medium_02.mp3"></audio>
-  <div class="small" style="margin-top:6px">RTF 0.25 · CSIM 0.778 ·
-  WER 31.6% · DNSMOS-OVRL 3.70</div>
-  <details><summary>ASR transcript</summary><div class="hyp">आज सकाली मी बागेत फिरायला गेलो होतो। तिथे मला माझे जुने मित्र भेटले आणे आमी बराच वेल गप्पा मारला।</div></details>
+  <div class="small" style="margin-top:6px">RTF 0.34 · CSIM 0.756 ·
+  WER 57.9% · DNSMOS-OVRL 3.50</div>
+  <details><summary>ASR transcript</summary><div class="hyp">आज सकाली मी बागेत फिराया ला गेले होते, तिथे मला माझा जुन्या मैत्र नी भेटला, आणी आमी बराच वेल गप्पा मारला.</div></details>
+</div>
+<div class="sample">
+  <div class="head"><span class="name">IndicF5</span>
+  <span class="badge b">8.70 s</span></div>
+  <audio controls preload="metadata" src="tts_audio/indicf5/medium_02.mp3"></audio>
+  <div class="small" style="margin-top:6px">RTF 1.76 · CSIM 0.859 ·
+  WER 42.1% · DNSMOS-OVRL 3.98</div>
+  <details><summary>ASR transcript</summary><div class="hyp">आज सकाली मी बागेत फिरायला गेले होते। तिथे मला माझा जुन्या मैत्रीनी भेटलया आणि आमी बराच वेल गप्पा मारलया।</div></details>
 </div>
 </div>
 <h3 style="font-size:1rem;margin:20px 0 8px">Long (~50 words)
-        <span class="small">· long_03 · 237 chars</span></h3>
-        <div class="small" style="margin-bottom:8px">महाराष्ट्राची राजधानी मुंबई आहे, पण सांस्कृतिकदृष्ट्या पुण्याला विशेष स्थान आहे. गणेशोत्सवात संपूर्ण राज्यात उत्साह असतो. लोक दहा दिवस गणरायाची आराधना करतात आणि शेवटी विसर्जन करतात. या सणामुळे सर्वांच्या मनात आनंद आणि एकजूट निर्माण होते.</div>
+        <span class="small">· long_03 · 285 chars</span></h3>
+        <div class="small" style="margin-bottom:8px">महाराष्ट्राची राजधानी मुंबई आहे, पण सांस्कृतिकदृष्ट्या पुण्याला विशेष स्थान आहे. गेल्या वर्षी मी मैत्रिणींसोबत गणेशोत्सवात सहभागी झाले होते. संपूर्ण राज्यात दहा दिवस उत्साह असतो. लोक गणरायाची आराधना करतात आणि शेवटी विसर्जन करतात. या सणामुळे सर्वांच्या मनात आनंद आणि एकजूट निर्माण होते.</div>
         <div class="grid2">
 <div class="sample">
   <div class="head"><span class="name">OmniVoice</span>
-  <span class="badge v">16.52 s</span></div>
+  <span class="badge v">19.40 s</span></div>
   <audio controls preload="metadata" src="tts_audio/omnivoice/long_03.mp3"></audio>
-  <div class="small" style="margin-top:6px">RTF 0.17 · CSIM 0.804 ·
-  WER 70.6% · DNSMOS-OVRL 3.62</div>
-  <details><summary>ASR transcript</summary><div class="hyp">महाराश्टाची राजधानी मुंबई आहे, पण सांस्कृतिक दुरुष्ट्या पुन्याला विशेश स्थाना है। गणे शोचसवात संपूर्ण राज्यात उच्छा अस्तो। लोक दहा दिवस गणे ची आराधना करतात और शेवटी विसरजन करतात। या सणा मुले सरव</div></details>
+  <div class="small" style="margin-top:6px">RTF 0.24 · CSIM 0.827 ·
+  WER 73.2% · DNSMOS-OVRL 3.69</div>
+  <details><summary>ASR transcript</summary><div class="hyp">महाराश्ट्राची राजधानी मुंबई आहे, पण सांस्कृतिक दृष्ट्या पुन्याला विशेश स्थान आहे, गेला वर्षी मी मैत्रिनीन सोबत गनेश उच्छवाच सहभागी जाले होते, संपूर्ण राज्याथ दहा दिवस उच्छाह असतो, लोग गन्रायाची आर</div></details>
+</div>
+<div class="sample">
+  <div class="head"><span class="name">IndicF5</span>
+  <span class="badge b">22.74 s</span></div>
+  <audio controls preload="metadata" src="tts_audio/indicf5/long_03.mp3"></audio>
+  <div class="small" style="margin-top:6px">RTF 1.66 · CSIM 0.841 ·
+  WER 46.3% · DNSMOS-OVRL 3.70</div>
+  <details><summary>ASR transcript</summary><div class="hyp">महाराश्ट्राची राजधानी मुम्बई आहे पण सांस्कृतिक दुरुष्ट्या पुन्याला विशेश स्थान आहे. गेल्या वर्षी मी मैत्रिनीन सोबत गनेश उच्छवात सहभागी जाले होते. संपूर्ण राज्जात दहा दिवस उच्छा हस्तो. लोग गन्रायाची आराधना करतात आणि शेवटी विसर्जन करतात या सना मुले सर्वांच्या मनात आनंद आणि एकजूट निर्मान होते</div></details>
 </div>
 </div>
 <h3 style="font-size:1rem;margin:20px 0 8px">Numbers &amp; names
-        <span class="small">· numbers_04 · 94 chars</span></h3>
-        <div class="small" style="margin-bottom:8px">२३ ऑगस्ट २०२६ रोजी सकाळी ९:३० वाजता डॉ. सचिन पाटील यांनी १२५ विद्यार्थ्यांना प्रमाणपत्रे दिली.</div>
+        <span class="small">· numbers_04 · 129 chars</span></h3>
+        <div class="small" style="margin-bottom:8px">२३ ऑगस्ट २०२६ रोजी सकाळी ९:३० वाजता डॉ. सुचिता पाटील यांनी १२५ विद्यार्थ्यांना प्रमाणपत्रे दिली. मी या कार्यक्रमाला उपस्थित होते.</div>
         <div class="grid2">
 <div class="sample">
   <div class="head"><span class="name">OmniVoice</span>
-  <span class="badge v">7.84 s</span></div>
+  <span class="badge v">10.12 s</span></div>
   <audio controls preload="metadata" src="tts_audio/omnivoice/numbers_04.mp3"></audio>
-  <div class="small" style="margin-top:6px">RTF 0.22 · CSIM 0.792 ·
-  WER 93.8% · DNSMOS-OVRL 3.76</div>
-  <details><summary>ASR transcript</summary><div class="hyp">बुच्ची आगस्ट वन्नाश रोजी सकाली अगनास्ताश वास्ता डोक्का सचिन पाटिल यानी अगनास्ताश विद्यार्थ्यानना प्रमाण पत्रे दिली।</div></details>
+  <div class="small" style="margin-top:6px">RTF 0.27 · CSIM 0.807 ·
+  WER 85.7% · DNSMOS-OVRL 3.77</div>
+  <details><summary>ASR transcript</summary><div class="hyp">दोस ओगस्ट दोना दसा रोजी सकाली दोनसाश वास्ता डोको सुचिता पाटील। यानी अगदोन शासाद विद्यार्थ्यानना प्रमाण पत्रे दिली। मी या कार्यक्रमाला उपस्थित होते।</div></details>
+</div>
+<div class="sample">
+  <div class="head"><span class="name">IndicF5</span>
+  <span class="badge b">10.24 s</span></div>
+  <audio controls preload="metadata" src="tts_audio/indicf5/numbers_04.mp3"></audio>
+  <div class="small" style="margin-top:6px">RTF 1.75 · CSIM 0.805 ·
+  WER 66.7% · DNSMOS-OVRL 4.08</div>
+  <details><summary>ASR transcript</summary><div class="hyp">लोगस्ट इस सान्यसरोजी सकाली ओपिजवास्ता डौ सुचिता पाटील यानी ऐजज विद्यार्थ्यानना प्रमान पत्रे दिली. मी या कार्यक्रमाला उपस्थित होते.</div></details>
 </div>
 </div>
 <h2 class="section">System metrics</h2>
 <div class="tablebox"><table><thead><tr>
 <th>Model</th><th>Load (s)</th><th>Total synthesis (s)</th><th>Avg RTF</th>
-<th>Peak PyTorch VRAM</th><th>Device peak</th><th>CPU RAM peak</th><th>Torch</th><th>GPU</th>
+<th>Peak PyTorch VRAM</th><th>GPU used peak*</th><th>CPU RAM peak</th><th>Torch</th><th>GPU</th>
 </tr></thead><tbody>
 <tr>
 <td class="model">OmniVoice</td>
-<td>1.2</td>
-<td>7.4</td>
-<td>0.26</td>
-<td>2.18 GiB</td>
-<td>2.68 GiB</td>
-<td>3481 MB</td>
+<td>15.6</td>
+<td>11.4</td>
+<td>0.35</td>
+<td>2.15 GiB</td>
+<td>2.77 GiB</td>
+<td>3440 MB</td>
 <td>2.8.0+cu128</td>
-<td>NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb</td>
+<td>NVIDIA H200 NVL MIG 1g.18gb</td>
+</tr>
+<tr>
+<td class="model">IndicF5</td>
+<td>24.4</td>
+<td>81.2</td>
+<td>1.97</td>
+<td>2.62 GiB</td>
+<td>2.90 GiB</td>
+<td>2643 MB</td>
+<td>2.8.0+cu128</td>
+<td>NVIDIA H200 NVL MIG 1g.18gb</td>
 </tr>
 </tbody></table></div>
+<div class="notes" style="background:#fffbeb;border-left-color:#b45309;color:#78350f">
+<b>*VRAM note.</b> <i>Peak PyTorch VRAM</i> is the model process's own CUDA allocation (max of load and synthesis).
+<i>GPU used peak</i> is whole-device usage sampled during the run and includes other MIG tenants, so it is
+not attributable to the model. Use the PyTorch figure for model footprint.
+</div>
 <div class="notes">
 <b>Method.</b> Both models get the same Marathi reference clip and transcript (zero-shot cloning),
 the same four target texts and the same GPU slice. WER/CER come from faster-whisper large-v3 (mr)
 against the target text; CSIM is the ECAPA cosine similarity to the reference voice. Predicted MOS
 uses UTMOS when available, otherwise DNSMOS (OVRL). RTF = synthesis seconds per second of generated
-audio (lower is better). Whisper large-v3 is not a strong Marathi ASR model, so WER/CER are
+audio (lower is better). IndicF5 ran in eager mode (torch.compile disabled) for stable measurement;
+OmniVoice used its default 32-step sampler. Whisper large-v3 is not a strong Marathi ASR model, so WER/CER are
 ASR-dependent and should be read together with CER, CSIM and listening. The numbers prompt is
 especially affected because ASR may render Devanagari digits as words. Manual MOS is left blank by
 design.
 </div>
-<footer>Marathi TTS benchmark · generated 2026-11-03T13:24:25</footer>
+<footer>Marathi TTS benchmark · generated 2026-11-19T13:06:32</footer>
 </div></body></html>
