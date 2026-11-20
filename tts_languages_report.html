@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>13-Language TTS Benchmark — OmniVoice vs IndicF5</title>
+<style>
+:root{--bg:#f5f7fa;--card:#fff;--ink:#22303f;--muted:#65758b;--line:#dfe6ee;
+--blue:#2563eb;--violet:#7c3aed;--green:#15803d;--amber:#b45309;--soft:#eef2f7}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding:26px 22px 50px}
+header.hero{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 55%,#6d28d9 100%);color:#fff;border-radius:16px;padding:30px 34px;margin-bottom:18px}
+header.hero h1{margin:0 0 6px;font-size:clamp(1.4rem,2.6vw,1.9rem)}
+header.hero p{margin:0;opacity:.92;font-size:.98rem}
+.meta{display:flex;flex-wrap:wrap;gap:10px;background:#111827;color:#d1d5db;border-radius:12px;padding:12px 16px;font-size:.84rem;margin-bottom:22px}
+.meta b{color:#fff}
+.cards{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:26px}
+@media(min-width:760px){.cards{grid-template-columns:1fr 1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:0 2px 12px rgba(15,23,42,.05)}
+.card h2{margin:0 0 4px;font-size:1.08rem}
+.card .sub{color:var(--muted);font-size:.8rem;margin-bottom:12px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.kpi{background:var(--soft);border-radius:10px;padding:9px 11px}
+.kpi .v{font-size:1.15rem;font-weight:700}
+.kpi .k{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+h2.section{font-size:1.15rem;margin:28px 0 10px}
+.tablebox{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:620px}
+table{border-collapse:collapse;width:100%;font-size:.84rem;min-width:720px}
+thead th{position:sticky;top:0;background:#f1f5f9;z-index:2;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#475569;padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+thead th:first-child{text-align:left;left:0;z-index:3}
+tbody td{padding:8px 10px;border-bottom:1px solid #edf1f6;text-align:right;white-space:nowrap}
+tbody td:first-child{text-align:left;font-weight:600;position:sticky;left:0;background:var(--card);z-index:1}
+tbody tr:nth-child(even) td{background:#fbfcfe}
+tbody tr:nth-child(even) td:first-child{background:#fbfcfe}
+tbody tr:hover td{background:#f2f7ff}
+tbody tr:hover td:first-child{background:#f2f7ff}
+td.model{font-weight:600}
+tr.group td{background:#eef3f9 !important;font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:#475569;position:static;text-align:left}
+.best{background:#dcfce7;color:var(--green);font-weight:700;padding:1px 7px;border-radius:999px}
+.na{color:#9aa7b6}
+.badge{display:inline-block;border-radius:999px;padding:2px 9px;font-size:.7rem;font-weight:700;background:var(--soft);color:#475569}
+.badge.v{background:#f3e8ff;color:var(--violet)}
+.badge.b{background:#dbeafe;color:var(--blue)}
+.grid2{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
+.sample{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.sample .head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.sample .name{font-weight:700;font-size:.92rem}
+audio{width:100%;margin-top:6px}
+.small{font-size:.78rem;color:var(--muted)}
+details{margin-top:8px}
+summary{cursor:pointer;font-size:.78rem;color:var(--blue)}
+.hyp{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:.8rem}
+.notes{background:#eef5ff;border-left:4px solid var(--blue);border-radius:0 10px 10px 0;padding:14px 18px;font-size:.84rem;color:#1e3a8a;margin-top:24px}
+footer{text-align:center;color:var(--muted);font-size:.78rem;padding:26px 0 6px}
+a{color:var(--blue)}
+
+.langgrid{display:grid;grid-template-columns:1fr;gap:14px}
+.langcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:0 2px 12px rgba(15,23,42,.05)}
+.langhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.langhead h3{margin:0;font-size:1.08rem}
+.native{font-weight:500;color:var(--muted);font-size:.92rem;margin-left:6px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.sentence{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;padding:10px 12px;margin:10px 0 12px;font-size:1.02rem}
+.duo{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:780px){.duo{grid-template-columns:1fr 1fr}}
+.modelbox{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+.modelbox h4{margin:0 0 2px;font-size:.9rem;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.metricsline{font-size:.76rem;color:var(--muted);margin-top:6px;line-height:1.7}
+.metricsline b{color:var(--ink)}
+.tag-ok{background:#dcfce7;color:#15803d}
+.tag-warn{background:#fef3c7;color:#b45309}
+.tag-bad{background:#fee2e2;color:#b91c1c}
+.tag-info{background:#dbeafe;color:#1d4ed8}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin:8px 0 0}
+.big-sentence{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:18px}
+.big-sentence .en{font-size:1.15rem;font-weight:600;margin-bottom:6px}
+.winnerline{background:#f0fdf4;border-left:4px solid #15803d;border-radius:0 10px 10px 0;padding:12px 16px;font-size:.85rem;color:#14532d;margin-top:14px}
+</style></head><body><div class="wrap">
+<header class="hero">
+  <h1>🌏 13-Language TTS Benchmark — OmniVoice vs IndicF5</h1>
+  <p>One sentence, 13 languages, one female reference voice · zero-shot cross-lingual cloning, coverage and quality</p>
+</header>
+<div class="meta">
+  <span><b>Languages:</b> 13</span>
+  <span><b>Sentence:</b> 1 master + 13 translations</span>
+  <span><b>Reference:</b> Marathi female · 9.24 s</span>
+  <span><b>Models:</b> 2</span>
+  <span><b>GPU:</b> NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb</span>
+</div>
+<div class="big-sentence">
+  <div class="small" style="text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:#475569;margin-bottom:6px">Master sentence</div>
+  <div class="en">Every morning, the sun rises and gives us new hope.</div>
+  <div class="small">Each language below uses a direct translation of this sentence in its native script.</div>
+</div>
+<div class="cards">
+  <div class="card" style="border-top:4px solid #7c3aed">
+    <h2>OmniVoice <span class="badge v">omnivoice</span></h2>
+    <div class="sub">Official coverage · generated samples · quality on the 11 shared official languages</div>
+    <div class="kpis">
+      <div class="kpi"><div class="v">13/13</div><div class="k">Official languages</div></div>
+      <div class="kpi"><div class="v">13/13</div><div class="k">Samples generated</div></div>
+      <div class="kpi"><div class="v">10/11</div><div class="k">ASR scored (shared)</div></div>
+      <div class="kpi"><div class="v">28.4%</div><div class="k">Avg CER (shared, ASR)</div></div>
+      <div class="kpi"><div class="v">0.728</div><div class="k">Avg CSIM (shared)</div></div>
+      <div class="kpi"><div class="v">3.32</div><div class="k">DNSMOS-OVRL (shared)</div></div>
+      <div class="kpi"><div class="v">0.35×</div><div class="k">Avg RTF (shared)</div></div>
+      <div class="kpi"><div class="v">2.18 GiB</div><div class="k">Peak VRAM</div></div>
+    </div>
+  </div>
+  <div class="card" style="border-top:4px solid #2563eb">
+    <h2>IndicF5 <span class="badge b">indicf5</span></h2>
+    <div class="sub">Official coverage · generated samples · quality on the 11 shared official languages</div>
+    <div class="kpis">
+      <div class="kpi"><div class="v">11/13</div><div class="k">Official languages</div></div>
+      <div class="kpi"><div class="v">13/13</div><div class="k">Samples generated</div></div>
+      <div class="kpi"><div class="v">10/11</div><div class="k">ASR scored (shared)</div></div>
+      <div class="kpi"><div class="v">27.1%</div><div class="k">Avg CER (shared, ASR)</div></div>
+      <div class="kpi"><div class="v">0.742</div><div class="k">Avg CSIM (shared)</div></div>
+      <div class="kpi"><div class="v">3.76</div><div class="k">DNSMOS-OVRL (shared)</div></div>
+      <div class="kpi"><div class="v">0.92×</div><div class="k">Avg RTF (shared)</div></div>
+      <div class="kpi"><div class="v">1.37 GiB</div><div class="k">Peak VRAM</div></div>
+    </div>
+  </div></div><div class="winnerline"><b>Per-language wins</b> across the shared official languages:<div class="small" style="margin-top:4px"><b>CER wins</b> &nbsp;·&nbsp; OmniVoice: <b>2</b> &nbsp;·&nbsp; IndicF5: <b>4</b> &nbsp;·&nbsp; tie: <b>4</b> &nbsp;<span class='small'>(n=10)</span></div><div class="small" style="margin-top:4px"><b>CSIM wins</b> &nbsp;·&nbsp; OmniVoice: <b>5</b> &nbsp;·&nbsp; IndicF5: <b>6</b> &nbsp;<span class='small'>(n=11)</span></div><div class="small" style="margin-top:4px"><b>DNSMOS-OVRL wins</b> &nbsp;·&nbsp; OmniVoice: <b>2</b> &nbsp;·&nbsp; IndicF5: <b>9</b> &nbsp;<span class='small'>(n=11)</span></div></div><h2 class="section">Reference voice</h2>
+<div class="sample">
+  <div class="head"><span class="name">🎙️ Marathi female reference</span><span class="badge">prompt</span></div>
+  <div class="small">Same clip and transcript are used for every language. Cross-lingual cloning means target-language pronunciation is not the same as native speech.</div>
+  <audio controls preload="metadata" src="tts_audio_languages/reference.mp3"></audio>
+  <details><summary>Reference transcript</summary><div class="hyp">पण एकदा आपण सुरुवात करण्याआधीच विचार करायला लागतो — लोक काय म्हणतील? आपल्याला जमेल का? अपयशाला तर काय होईल?</div></details>
+</div><h2 class="section">Language matrix</h2>
+<div class="tablebox"><table><thead><tr>
+<th>Language</th><th>Script</th><th>OmniVoice</th><th>IndicF5</th>
+<th>CER Omni ↓</th><th>CER Indic ↓</th><th>CSIM Omni ↑</th><th>CSIM Indic ↑</th>
+<th>DNSMOS Omni ↑</th><th>DNSMOS Indic ↑</th>
+</tr></thead><tbody><tr>
+<td class="model">Assamese</td>
+<td>Bengali-Assamese</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="">91.7%</span></td>
+<td><span class="best">90.0%</span></td>
+<td><span class="best">0.707</span></td>
+<td><span class="">0.705</span></td>
+<td><span class="">3.43</span></td>
+<td><span class="best">3.96</span></td>
+</tr><tr>
+<td class="model">Bengali</td>
+<td>Bengali</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="best">20.4%</span></td>
+<td><span class="best">20.4%</span></td>
+<td><span class="best">0.713</span></td>
+<td><span class="">0.701</span></td>
+<td><span class="">3.50</span></td>
+<td><span class="best">3.86</span></td>
+</tr><tr>
+<td class="model">Gujarati</td>
+<td>Gujarati</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="">6.1%</span></td>
+<td><span class="best">4.1%</span></td>
+<td><span class="best">0.750</span></td>
+<td><span class="">0.723</span></td>
+<td><span class="">3.23</span></td>
+<td><span class="best">3.76</span></td>
+</tr><tr>
+<td class="model">Hindi</td>
+<td>Devanagari</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="">9.3%</span></td>
+<td><span class="best">2.3%</span></td>
+<td><span class="">0.653</span></td>
+<td><span class="best">0.680</span></td>
+<td><span class="">3.42</span></td>
+<td><span class="best">3.81</span></td>
+</tr><tr>
+<td class="model">Marathi</td>
+<td>Devanagari</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="">18.0%</span></td>
+<td><span class="best">12.0%</span></td>
+<td><span class="best">0.787</span></td>
+<td><span class="">0.782</span></td>
+<td><span class="">3.81</span></td>
+<td><span class="best">3.96</span></td>
+</tr><tr>
+<td class="model">Odia</td>
+<td>Odia</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="na">n/a</span></td>
+<td><span class="na">n/a</span></td>
+<td><span class="">0.721</span></td>
+<td><span class="best">0.769</span></td>
+<td><span class="">3.39</span></td>
+<td><span class="best">3.98</span></td>
+</tr><tr>
+<td class="model">Punjabi</td>
+<td>Gurmukhi</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="best">19.6%</span></td>
+<td><span class="best">19.6%</span></td>
+<td><span class="">0.670</span></td>
+<td><span class="best">0.726</span></td>
+<td><span class="">2.81</span></td>
+<td><span class="best">3.65</span></td>
+</tr><tr>
+<td class="model">Sanskrit</td>
+<td>Devanagari</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-warn">out-of-scope</span></td>
+<td><span class="">20.3%</span></td>
+<td><span class="">23.7%</span></td>
+<td><span class="">0.688</span></td>
+<td><span class="">0.687</span></td>
+<td><span class="">3.20</span></td>
+<td><span class="">3.79</span></td>
+</tr><tr>
+<td class="model">Kannada</td>
+<td>Kannada</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="best">6.9%</span></td>
+<td><span class="best">6.9%</span></td>
+<td><span class="">0.771</span></td>
+<td><span class="best">0.782</span></td>
+<td><span class="">3.00</span></td>
+<td><span class="best">3.79</span></td>
+</tr><tr>
+<td class="model">Malayalam</td>
+<td>Malayalam</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="best">94.0%</span></td>
+<td><span class="">96.4%</span></td>
+<td><span class="">0.721</span></td>
+<td><span class="best">0.737</span></td>
+<td><span class="">2.92</span></td>
+<td><span class="best">3.82</span></td>
+</tr><tr>
+<td class="model">Tamil</td>
+<td>Tamil</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="best">4.3%</span></td>
+<td><span class="">5.7%</span></td>
+<td><span class="">0.710</span></td>
+<td><span class="best">0.840</span></td>
+<td><span class="best">3.71</span></td>
+<td><span class="">3.48</span></td>
+</tr><tr>
+<td class="model">Telugu</td>
+<td>Telugu</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="best">13.3%</span></td>
+<td><span class="best">13.3%</span></td>
+<td><span class="best">0.802</span></td>
+<td><span class="">0.724</span></td>
+<td><span class="best">3.34</span></td>
+<td><span class="">3.31</span></td>
+</tr><tr>
+<td class="model">English</td>
+<td>Latin</td>
+<td><span class="badge tag-ok">official</span></td>
+<td><span class="badge tag-warn">out-of-scope</span></td>
+<td><span class="">0.0%</span></td>
+<td><span class="">83.7%</span></td>
+<td><span class="">0.564</span></td>
+<td><span class="">0.587</span></td>
+<td><span class="">2.64</span></td>
+<td><span class="">2.85</span></td>
+</tr></tbody></table></div><div class="legend"><span><span class="badge tag-ok">official</span> in model's declared language list</span>
+<span><span class="badge tag-warn">out-of-scope</span> not declared by IndicF5</span>
+<span><span class="best">best</span> on the same language</span></div><h2 class="section">Listen by language</h2><div class="langgrid"><div class="langcard">
+  <div class="langhead">
+    <div><h3>Assamese<span class="native">অসমীয়া</span></h3>
+    <div class="small">Bengali-Assamese · <code>as</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">প্ৰতিদিনে ৰাতিপুৱা সূৰ্য্য উদয় হৈ আমাক নতুন আশাৰ সঞ্চাৰ কৰে।</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">4.18 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/as.mp3"></audio><div class="small" style="margin-top:4px">generated audio 4.18 s</div>
+  <div class="metricsline">RTF <b>0.33×</b> · CER <b>91.7%</b> · CSIM <b>0.707</b> · DNSMOS-OVRL <b>3.43</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">प्रतिदिने रातिप्वा हुड्जो उड़ाई होई, आमाक नुतुन आखार हन्सार कड़े।</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">4.95 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/as.mp3"></audio><div class="small" style="margin-top:4px">generated audio 4.95 s</div>
+  <div class="metricsline">RTF <b>0.85×</b> · CER <b>90.0%</b> · CSIM <b>0.705</b> · DNSMOS-OVRL <b>3.96</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">प्रति दिने राति पुआ खुडजो उदय होई, आमाक नोतुन आशार हनसार करे,</div></details>
+</div></div>
+  
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Bengali<span class="native">বাংলা</span></h3>
+    <div class="small">Bengali · <code>bn</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">প্রতিদিন সকালে, সূর্য ওঠে এবং আমাদের নতুন আশা দেয়।</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">3.48 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/bn.mp3"></audio><div class="small" style="margin-top:4px">generated audio 3.48 s</div>
+  <div class="metricsline">RTF <b>0.38×</b> · CER <b>20.4%</b> · CSIM <b>0.713</b> · DNSMOS-OVRL <b>3.50</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">প্রতিদিন সকালে শুর্জে উঠে এবং আমাদের নতু নাশাদায়।</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">4.04 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/bn.mp3"></audio><div class="small" style="margin-top:4px">generated audio 4.04 s</div>
+  <div class="metricsline">RTF <b>1.01×</b> · CER <b>20.4%</b> · CSIM <b>0.701</b> · DNSMOS-OVRL <b>3.86</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">প্রতিদিন সকালে শুর্জো উঠে এবং আমাদের নতু নাশা দে</div></details>
+</div></div>
+  
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Gujarati<span class="native">ગુજરાતી</span></h3>
+    <div class="small">Gujarati · <code>gu</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">દરરોજ સવારે, સૂર્ય ઉગે છે અને આપણને નવી આશા આપે છે.</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">3.56 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/gu.mp3"></audio><div class="small" style="margin-top:4px">generated audio 3.56 s</div>
+  <div class="metricsline">RTF <b>0.37×</b> · CER <b>6.1%</b> · CSIM <b>0.750</b> · DNSMOS-OVRL <b>3.23</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">દર્રોજ સવારે સૂરીયા ઉગે છે અને આપણને નવી આશા આપે છે</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">3.86 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/gu.mp3"></audio><div class="small" style="margin-top:4px">generated audio 3.86 s</div>
+  <div class="metricsline">RTF <b>1.05×</b> · CER <b>4.1%</b> · CSIM <b>0.723</b> · DNSMOS-OVRL <b>3.76</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">દરોત સવારે સૂર્ય ઉગે છે અને આપણને નવી આશા આપે છે</div></details>
+</div></div>
+  
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Hindi<span class="native">हिन्दी</span></h3>
+    <div class="small">Devanagari · <code>hi</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">हर सुबह सूरज उगता है और हमें नई आशा देता है।</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">3.11 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/hi.mp3"></audio><div class="small" style="margin-top:4px">generated audio 3.11 s</div>
+  <div class="metricsline">RTF <b>0.40×</b> · CER <b>9.3%</b> · CSIM <b>0.653</b> · DNSMOS-OVRL <b>3.42</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">हर सुभा सुरज उखता है और हमें नई आशा देता है।</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">3.35 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/hi.mp3"></audio><div class="small" style="margin-top:4px">generated audio 3.35 s</div>
+  <div class="metricsline">RTF <b>1.14×</b> · CER <b>2.3%</b> · CSIM <b>0.680</b> · DNSMOS-OVRL <b>3.81</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">हर सुबह सूरज उकता है और हमें नई आशा देता है</div></details>
+</div></div>
+  
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Marathi<span class="native">मराठी</span></h3>
+    <div class="small">Devanagari · <code>mr</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">दररोज सकाळी, सूर्य उगवतो आणि आपल्याला नवीन आशा देतो.</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">3.63 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/mr.mp3"></audio><div class="small" style="margin-top:4px">generated audio 3.63 s</div>
+  <div class="metricsline">RTF <b>0.36×</b> · CER <b>18.0%</b> · CSIM <b>0.787</b> · DNSMOS-OVRL <b>3.81</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">दर्रोज सकाली सुर्य उगवतो आणे आपलाला नवी नाशा देतो।</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">4.08 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/mr.mp3"></audio><div class="small" style="margin-top:4px">generated audio 4.08 s</div>
+  <div class="metricsline">RTF <b>0.97×</b> · CER <b>12.0%</b> · CSIM <b>0.782</b> · DNSMOS-OVRL <b>3.96</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">दर्रोज सकाली सूर्य उगवतो आणि अपल्याला नवी नाशा देतो</div></details>
+</div></div>
+  
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Odia<span class="native">ଓଡ଼ିଆ</span></h3>
+    <div class="small">Odia · <code>ory</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">ପ୍ରତିଦିନ ସକାଳେ ସୂର୍ଯ୍ୟ ଉଦୟ ହୋଇ ଆମକୁ ନୂତନ ଆଶା ଦେଇଥାଏ।</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">3.88 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/or.mp3"></audio><div class="small" style="margin-top:4px">generated audio 3.88 s</div>
+  <div class="metricsline">RTF <b>0.36×</b> · CER <b>n/a</b> · CSIM <b>0.721</b> · DNSMOS-OVRL <b>3.39</b></div>
+  
+  <div class="small">ASR n/a for this language</div>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">4.19 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/or.mp3"></audio><div class="small" style="margin-top:4px">generated audio 4.19 s</div>
+  <div class="metricsline">RTF <b>0.93×</b> · CER <b>n/a</b> · CSIM <b>0.769</b> · DNSMOS-OVRL <b>3.98</b></div>
+  
+  <div class="small">ASR n/a for this language</div>
+</div></div>
+  <div class="small" style="color:#b45309;margin-top:8px">Whisper large-v3 has no Odia language code, so WER/CER are N/A here. CSIM, DNSMOS and listening remain available.</div>
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Punjabi<span class="native">ਪੰਜਾਬੀ</span></h3>
+    <div class="small">Gurmukhi · <code>pa</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">ਹਰ ਸਵੇਰ, ਸੂਰਜ ਚੜ੍ਹਦਾ ਹੈ ਅਤੇ ਸਾਨੂੰ ਨਵੀਂ ਉਮੀਦ ਦਿੰਦਾ ਹੈ।</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">3.40 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/pa.mp3"></audio><div class="small" style="margin-top:4px">generated audio 3.40 s</div>
+  <div class="metricsline">RTF <b>0.39×</b> · CER <b>19.6%</b> · CSIM <b>0.670</b> · DNSMOS-OVRL <b>2.81</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">ਹਰ ਸਵੇ ਸੂਰਤ ਚਡ਼ਦਾ ਹੈ ਅਤੇ ਸਾਨੁ ਨਵੀ ਉਮੀਦ ਦੀਨਦਾ ਹੈ।</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">4.11 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/pa.mp3"></audio><div class="small" style="margin-top:4px">generated audio 4.11 s</div>
+  <div class="metricsline">RTF <b>0.95×</b> · CER <b>19.6%</b> · CSIM <b>0.726</b> · DNSMOS-OVRL <b>3.65</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">ਹਰ ਸਵੇਰ ਸੂਰਤ ਚਡ਼ਦਾ ਹੈ ਅਤੇ ਸਾਨੁ ਨਮੀ ਉਮੀਦ ਦੀਨਦਾ ਹੈ</div></details>
+</div></div>
+  
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Sanskrit<span class="native">संस्कृतम्</span></h3>
+    <div class="small">Devanagari · <code>sa</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-warn">out-of-scope</span></div>
+  </div>
+  <div class="sentence">प्रतिदिनं प्रातः सूर्यः उदेति अस्मभ्यं नवीनाम् आशां ददाति च।</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">3.83 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/sa.mp3"></audio><div class="small" style="margin-top:4px">generated audio 3.83 s</div>
+  <div class="metricsline">RTF <b>0.34×</b> · CER <b>20.3%</b> · CSIM <b>0.688</b> · DNSMOS-OVRL <b>3.20</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">प्रतिदिनम् प्राता सूर्यह उदेति अस्मभ्यम् नवीनामाशाम् ददातिच.</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-warn">out-of-scope</span> <span class="badge tag-info">4.92 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/sa.mp3"></audio><div class="small" style="margin-top:4px">generated audio 4.92 s</div>
+  <div class="metricsline">RTF <b>0.82×</b> · CER <b>23.7%</b> · CSIM <b>0.687</b> · DNSMOS-OVRL <b>3.79</b></div>
+  <div class="small" style="color:#b45309;margin-top:6px">Out-of-scope for this model's official language list; audio is shown as an extrapolation.</div>
+  <details><summary>ASR transcript</summary><div class="hyp">प्रति दिन प्राता सूर्य उदेती अस्मभ्य नवीना माशान ददातीचा।</div></details>
+</div></div>
+  <div class="small" style="color:#b45309;margin-top:8px">IndicF5 does not list this language as officially supported; its sample is included only to show extrapolation.</div>
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Kannada<span class="native">ಕನ್ನಡ</span></h3>
+    <div class="small">Kannada · <code>kn</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">ಪ್ರತಿದಿನ ಬೆಳಿಗ್ಗೆ, ಸೂರ್ಯ ಉದಯಿಸುತ್ತಾನೆ ಮತ್ತು ನಮಗೆ ಹೊಸ ಭರವಸೆಯನ್ನು ನೀಡುತ್ತಾನೆ.</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">5.23 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/kn.mp3"></audio><div class="small" style="margin-top:4px">generated audio 5.23 s</div>
+  <div class="metricsline">RTF <b>0.29×</b> · CER <b>6.9%</b> · CSIM <b>0.771</b> · DNSMOS-OVRL <b>3.00</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">ಪ್ರತಿದಿನ ಬೆಳಿಗ್ಗೆ ಸೂರಿಯ ಉದೆಯಿ ಸುತ್ತಾನೆ, ಮತ್ತು ನಮಗೆ ಹೋಸ ಭರವಸೆಯನ್ನು ನಿಡುತ್ತಾನೆ.</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">6.14 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/kn.mp3"></audio><div class="small" style="margin-top:4px">generated audio 6.14 s</div>
+  <div class="metricsline">RTF <b>0.80×</b> · CER <b>6.9%</b> · CSIM <b>0.782</b> · DNSMOS-OVRL <b>3.79</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">ಪ್ರತಿದಿನ ಬೆಳಿಗ್ಗೆ ಸೂರಿಯ ಉದೈಸುತ್ತಾನೆ, ಮತ್ತು ನಮಗೆ ಹೊಸಭರವಸೆಯನ್ನು ನಿಡುತ್ತಾನೆ.</div></details>
+</div></div>
+  
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Malayalam<span class="native">മലയാളം</span></h3>
+    <div class="small">Malayalam · <code>ml</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">എല്ലാ ദിവസവും രാവിലെ സൂര്യൻ ഉദിക്കുകയും നമുക്ക് പുതിയ പ്രതീക്ഷകൾ നൽകുകയും ചെയ്യുന്നു.</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">5.40 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/ml.mp3"></audio><div class="small" style="margin-top:4px">generated audio 5.40 s</div>
+  <div class="metricsline">RTF <b>0.30×</b> · CER <b>94.0%</b> · CSIM <b>0.721</b> · DNSMOS-OVRL <b>2.92</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">एल्ला दिवसवुम् राविले सूर्यन उदिक्युके युम् नमकु पुदिय प्रदीक्षकल् नल्कुके युम् चेयिनु।</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">7.05 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/ml.mp3"></audio><div class="small" style="margin-top:4px">generated audio 7.05 s</div>
+  <div class="metricsline">RTF <b>0.72×</b> · CER <b>96.4%</b> · CSIM <b>0.737</b> · DNSMOS-OVRL <b>3.82</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">एल्ला दिवसवुम् राविले सूर्यन उदिक्युगेयुम् नमुक्कु पुदिय प्रदीक्षकल् नल्गुगेयुम् चेयिन्नु।</div></details>
+</div></div>
+  
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Tamil<span class="native">தமிழ்</span></h3>
+    <div class="small">Tamil · <code>ta</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">ஒவ்வொரு காலையிலும் சூரியன் உதித்து நமக்கு புதிய நம்பிக்கையைத் தருகிறது.</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">4.34 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/ta.mp3"></audio><div class="small" style="margin-top:4px">generated audio 4.34 s</div>
+  <div class="metricsline">RTF <b>0.32×</b> · CER <b>4.3%</b> · CSIM <b>0.710</b> · DNSMOS-OVRL <b>3.71</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">ஒவ்வொரு காலையிலும் சூர்யன் உதித்து நமக்கு புதிய நம்பிக்கையை தருகிறது.</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">5.91 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/ta.mp3"></audio><div class="small" style="margin-top:4px">generated audio 5.91 s</div>
+  <div class="metricsline">RTF <b>0.83×</b> · CER <b>5.7%</b> · CSIM <b>0.840</b> · DNSMOS-OVRL <b>3.48</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">ஒவ்வொரு காலையிலும் சூர்யன் உதித்தி நமக்கு புதிய நம்பிக்கையை தருகிறது.</div></details>
+</div></div>
+  
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>Telugu<span class="native">తెలుగు</span></h3>
+    <div class="small">Telugu · <code>te</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-ok">official</span></div>
+  </div>
+  <div class="sentence">ప్రతి ఉదయం, సూర్యుడు ఉదయిస్తాడు మరియు మనకు కొత్త ఆశను ఇస్తాడు.</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">4.31 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/te.mp3"></audio><div class="small" style="margin-top:4px">generated audio 4.31 s</div>
+  <div class="metricsline">RTF <b>0.32×</b> · CER <b>13.3%</b> · CSIM <b>0.802</b> · DNSMOS-OVRL <b>3.34</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">ప్రతి ఉదేయం సూరిడు ఉదేస్తాడు, మరియు మనకు కొత్తా ఆసను ఇస్తాడు.</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">4.97 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/te.mp3"></audio><div class="small" style="margin-top:4px">generated audio 4.97 s</div>
+  <div class="metricsline">RTF <b>0.81×</b> · CER <b>13.3%</b> · CSIM <b>0.724</b> · DNSMOS-OVRL <b>3.31</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">ప్రత్తి ఉదేయం సూరీడు ఉదేస్తాడు, మరియు మనకు కొత్త ఆశను ఇస్తాడు.</div></details>
+</div></div>
+  
+</div><div class="langcard">
+  <div class="langhead">
+    <div><h3>English<span class="native">English</span></h3>
+    <div class="small">Latin · <code>en</code></div></div>
+    <div class="badges"><span class="badge tag-ok">official</span><span class="badge tag-warn">out-of-scope</span></div>
+  </div>
+  <div class="sentence">Every morning, the sun rises and gives us new hope.</div>
+  <div class="duo"><div class="modelbox">
+  <h4><span>OmniVoice</span><span><span class="badge tag-ok">official</span> <span class="badge tag-info">2.79 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/omnivoice/en.mp3"></audio><div class="small" style="margin-top:4px">generated audio 2.79 s</div>
+  <div class="metricsline">RTF <b>0.42×</b> · CER <b>0.0%</b> · CSIM <b>0.564</b> · DNSMOS-OVRL <b>2.64</b></div>
+  
+  <details><summary>ASR transcript</summary><div class="hyp">Every morning, the sun rises and gives us new hope.</div></details>
+</div><div class="modelbox">
+  <h4><span>IndicF5</span><span><span class="badge tag-warn">out-of-scope</span> <span class="badge tag-info">1.51 s</span></span></h4>
+  <audio controls preload="metadata" src="tts_audio_languages/indicf5/en.mp3"></audio><div class="small" style="margin-top:4px">generated audio 1.51 s</div>
+  <div class="metricsline">RTF <b>2.12×</b> · CER <b>83.7%</b> · CSIM <b>0.587</b> · DNSMOS-OVRL <b>2.85</b></div>
+  <div class="small" style="color:#b45309;margin-top:6px">Out-of-scope for this model's official language list; audio is shown as an extrapolation.</div>
+  <details><summary>ASR transcript</summary><div class="hyp">Kiss a COE.</div></details>
+</div></div>
+  <div class="small" style="color:#b45309;margin-top:8px">IndicF5 does not list this language as officially supported; its sample is included only to show extrapolation.</div>
+</div></div><h2 class="section">System metrics</h2>
+<div class="tablebox"><table><thead><tr>
+<th>Model</th><th>Load (s)</th><th>Total synthesis (s)</th><th>Avg RTF</th>
+<th>Peak PyTorch VRAM</th><th>GPU used peak*</th><th>CPU RAM peak</th><th>ASR scored</th><th>Official languages</th>
+</tr></thead><tbody><tr>
+<td class="model">OmniVoice</td>
+<td>17.2</td>
+<td>17.7</td>
+<td>0.35</td>
+<td>2.18 GiB</td>
+<td>2.52 GiB</td>
+<td>3200 MB</td>
+<td>10/11</td>
+<td>13/13</td>
+</tr><tr>
+<td class="model">IndicF5</td>
+<td>54.3</td>
+<td>54.1</td>
+<td>1.00</td>
+<td>1.37 GiB</td>
+<td>2.92 GiB</td>
+<td>2623 MB</td>
+<td>10/11</td>
+<td>11/13</td>
+</tr></tbody></table></div><div class="notes" style="background:#fffbeb;border-left-color:#b45309;color:#78350f">
+<b>*VRAM note.</b> <i>Peak PyTorch VRAM</i> is the model process's own maximum CUDA allocation over load and synthesis.
+<i>GPU used peak</i> is whole-device usage and can include other MIG tenants, so it is not attributable to the model.
+</div>
+<div class="notes">
+<b>Method.</b> Both models receive the same female Marathi reference clip and transcript, the same 13 target
+translations, one seed (1234) and the same sequential GPU allocation. OmniVoice uses its declared language code
+for each target (as, bn, gu, hi, mr, ory, pa, sa, kn, ml, ta, te, en); IndicF5 infers language from the target text.
+CER/WER use faster-whisper large-v3 (per-language where supported) where that language is supported; CSIM is ECAPA cosine similarity to the reference voice;
+DNSMOS-OVRL is predicted MOS. RTF = synthesis seconds per second of audio.
+</div>
+<div class="notes">
+<b>Coverage caveats.</b> IndicF5 declares support for 11 Indian languages, not Sanskrit or English. Its Sanskrit and
+English samples are extrapolations and should not be read as supported capability. Whisper large-v3 has no Odia
+language code, so Odia CER/WER are unavailable. Whisper is also weak on some Indic languages and on Sanskrit; do not
+treat ASR numbers as absolute pronunciation scores. The result is one sentence per language, not a full linguistic
+coverage evaluation. Listen to the samples, especially before using a language outside a model's declared support.
+</div>
+<footer>13-language TTS coverage · generated 2026-11-19T20:19:52</footer>
+</div></body></html>
