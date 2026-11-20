@@ -1,0 +1,586 @@
+{
+  "model": "omnivoice",
+  "model_title": "OmniVoice",
+  "settings": {
+    "num_step": 32,
+    "seed": 1234,
+    "warmup": true
+  },
+  "system": {
+    "hostname": "aicoeserver05",
+    "slurm_job_id": null,
+    "slurm_nodelist": null,
+    "slurm_gpus": "MIG-60a375d5-8693-57ab-8a24-63f3be2d2782",
+    "python": "3.12.15",
+    "torch": "2.8.0+cu128",
+    "cuda": "12.8",
+    "platform": "Linux-5.14.0-611.27.1.el9_7.x86_64-x86_64-with-glibc2.34",
+    "cuda_available": true,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb",
+    "gpu_total_mb": 24192.0
+  },
+  "ref": {
+    "audio": "/home/aryannavale/tts-bench/refs/ref_24k.wav",
+    "text": "पण एकदा आपण सुरुवात करण्याआधीच विचार करायला लागतो — लोक काय म्हणतील? आपल्याला जमेल का? अपयशाला तर काय होईल?",
+    "duration_s": 9.24,
+    "sample_rate": 24000,
+    "chars": 107
+  },
+  "texts": [
+    {
+      "id": "hi",
+      "label": "Hindi",
+      "language": "hi",
+      "language_name": "Hindi",
+      "native_name": "हिन्दी",
+      "script": "Devanagari",
+      "text": "नमस्ते, यह बहुभाषी लिप-सिंक बेंचमार्क की हिंदी प्रस्तुति है। आप जो आवाज़ सुन रहे हैं, वह ओमनीवॉइस से बनाई गई है। होंठ वेवटूलिप मॉडल से हिल रहे हैं। एक ही चेहरे पर हिंदी, अंग्रेज़ी और मराठी का असर देखा जा सकता है। धन्यवाद।"
+    },
+    {
+      "id": "en",
+      "label": "English",
+      "language": "en",
+      "language_name": "English",
+      "native_name": "English",
+      "script": "Latin",
+      "text": "Hello, this is the English demo of the multilingual lip-sync benchmark. The voice was generated with OmniVoice, and the lips are animated with Wav2Lip. The same face is reused across Hindi, English, and Marathi. Thank you for watching."
+    },
+    {
+      "id": "mr",
+      "label": "Marathi",
+      "language": "mr",
+      "language_name": "Marathi",
+      "native_name": "मराठी",
+      "script": "Devanagari",
+      "text": "नमस्कार, ही बहुभाषिक लिप-सिंक बेंचमार्कची मराठी मांडणी आहे. तुम्ही ऐकत असलेला आवाज ओम्नीव्हॉईसने तयार केला आहे. ओठ वेव्हटूलिप मॉडेलने हलवले आहेत. हिंदी, इंग्रजी आणि मराठी या तीन भाषांसाठी एकच चेहरा वापरला आहे."
+    }
+  ],
+  "load": {
+    "seconds": 1.279,
+    "peak_allocated_mb": 1955.2,
+    "peak_reserved_mb": 1960.0,
+    "device_used_mb": 1397.4
+  },
+  "warmup": {
+    "seconds": 1.436,
+    "audio_s": 0.97
+  },
+  "runs": [
+    {
+      "id": "hi",
+      "label": "Hindi",
+      "text": "नमस्ते, यह बहुभाषी लिप-सिंक बेंचमार्क की हिंदी प्रस्तुति है। आप जो आवाज़ सुन रहे हैं, वह ओमनीवॉइस से बनाई गई है। होंठ वेवटूलिप मॉडल से हिल रहे हैं। एक ही चेहरे पर हिंदी, अंग्रेज़ी और मराठी का असर देखा जा सकता है। धन्यवाद।",
+      "chars": 221,
+      "language": "hi",
+      "language_name": "Hindi",
+      "native_name": "हिन्दी",
+      "script": "Devanagari",
+      "status": "ok",
+      "wav": "out/omnivoice_lipsync/wav/hi.wav",
+      "sample_rate": 24000,
+      "seconds": 2.603,
+      "audio_s": 14.2,
+      "rtf": 0.1833,
+      "chars_per_s": 84.91,
+      "size_kb": 665.7,
+      "peak_allocated_mb": 2240.9,
+      "peak_reserved_mb": 2312.0
+    },
+    {
+      "id": "en",
+      "label": "English",
+      "text": "Hello, this is the English demo of the multilingual lip-sync benchmark. The voice was generated with OmniVoice, and the lips are animated with Wav2Lip. The same face is reused across Hindi, English, and Marathi. Thank you for watching.",
+      "chars": 235,
+      "language": "en",
+      "language_name": "English",
+      "native_name": "English",
+      "script": "Latin",
+      "status": "ok",
+      "wav": "out/omnivoice_lipsync/wav/en.wav",
+      "sample_rate": 24000,
+      "seconds": 2.125,
+      "audio_s": 14.22,
+      "rtf": 0.1494,
+      "chars_per_s": 110.59,
+      "size_kb": 666.6,
+      "peak_allocated_mb": 2229.6,
+      "peak_reserved_mb": 2312.0
+    },
+    {
+      "id": "mr",
+      "label": "Marathi",
+      "text": "नमस्कार, ही बहुभाषिक लिप-सिंक बेंचमार्कची मराठी मांडणी आहे. तुम्ही ऐकत असलेला आवाज ओम्नीव्हॉईसने तयार केला आहे. ओठ वेव्हटूलिप मॉडेलने हलवले आहेत. हिंदी, इंग्रजी आणि मराठी या तीन भाषांसाठी एकच चेहरा वापरला आहे.",
+      "chars": 209,
+      "language": "mr",
+      "language_name": "Marathi",
+      "native_name": "मराठी",
+      "script": "Devanagari",
+      "status": "ok",
+      "wav": "out/omnivoice_lipsync/wav/mr.wav",
+      "sample_rate": 24000,
+      "seconds": 2.563,
+      "audio_s": 14.28,
+      "rtf": 0.1795,
+      "chars_per_s": 81.56,
+      "size_kb": 669.4,
+      "peak_allocated_mb": 2236.9,
+      "peak_reserved_mb": 2312.0
+    }
+  ],
+  "vram_overall": {
+    "peak_allocated_mb": 2236.9,
+    "peak_reserved_mb": 2312.0,
+    "device_used_peak_mb": 2583.4,
+    "device_used_start_mb": 225.4,
+    "gpu_total_mb": 24192.0,
+    "samples": 71
+  },
+  "cpu_ram_peak_mb": 3334.6,
+  "elapsed_s": 35.038,
+  "vram_timeline_columns": [
+    "t_s",
+    "device_used_mb",
+    "pytorch_allocated_mb",
+    "pytorch_reserved_mb"
+  ],
+  "vram_timeline": [
+    [
+      0.11,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      0.62,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      1.12,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      1.62,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      2.12,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      2.62,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      3.12,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      3.62,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      4.12,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      4.62,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      5.12,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      5.62,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      6.13,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      6.63,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      7.13,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      7.63,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      8.13,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      8.63,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      9.13,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      9.63,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      10.13,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      10.63,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      11.13,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      11.64,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      12.14,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      12.64,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      13.14,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      13.64,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      14.14,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      14.64,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      15.14,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      15.64,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      16.14,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      16.64,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      17.14,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      17.65,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      18.15,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      18.65,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      19.15,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      19.65,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      20.15,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      20.65,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      21.15,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      21.65,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      22.16,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      22.66,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      23.16,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      23.66,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      24.16,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      24.67,
+      225.4,
+      0.0,
+      0.0
+    ],
+    [
+      25.17,
+      1397.4,
+      502.3,
+      1172.0
+    ],
+    [
+      25.74,
+      1397.4,
+      1168.4,
+      1172.0
+    ],
+    [
+      26.25,
+      2187.4,
+      1937.2,
+      1960.0
+    ],
+    [
+      26.75,
+      2581.4,
+      1967.5,
+      2312.0
+    ],
+    [
+      27.25,
+      2581.4,
+      2002.1,
+      2312.0
+    ],
+    [
+      27.75,
+      2583.4,
+      2161.9,
+      2312.0
+    ],
+    [
+      28.25,
+      2583.4,
+      2155.1,
+      2312.0
+    ],
+    [
+      28.76,
+      2583.4,
+      2067.9,
+      2312.0
+    ],
+    [
+      29.26,
+      2583.4,
+      2206.6,
+      2312.0
+    ],
+    [
+      29.76,
+      2583.4,
+      2110.3,
+      2312.0
+    ],
+    [
+      30.27,
+      2583.4,
+      1945.4,
+      2312.0
+    ],
+    [
+      30.77,
+      2583.4,
+      2168.1,
+      2312.0
+    ],
+    [
+      31.27,
+      2583.4,
+      2020.5,
+      2312.0
+    ],
+    [
+      31.77,
+      2583.4,
+      2043.7,
+      2312.0
+    ],
+    [
+      32.27,
+      2583.4,
+      2066.3,
+      2312.0
+    ],
+    [
+      32.77,
+      2583.4,
+      2067.2,
+      2312.0
+    ],
+    [
+      33.27,
+      2583.4,
+      2186.1,
+      2312.0
+    ],
+    [
+      33.77,
+      2583.4,
+      2128.3,
+      2312.0
+    ],
+    [
+      34.27,
+      2583.4,
+      2053.6,
+      2312.0
+    ],
+    [
+      34.78,
+      2583.4,
+      2196.1,
+      2312.0
+    ],
+    [
+      35.16,
+      2583.4,
+      1945.3,
+      2312.0
+    ]
+  ],
+  "summary": {
+    "runs_total": 3,
+    "runs_ok": 3,
+    "runs_failed": 0,
+    "load_s": 1.279,
+    "sum_synthesis_s": 7.291,
+    "sum_audio_s": 42.7,
+    "avg_rtf": 0.1707,
+    "peak_allocated_mb": 2236.9,
+    "device_used_peak_mb": 2583.4,
+    "cpu_ram_peak_mb": 3334.6
+  }
+}

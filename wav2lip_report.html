@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wav2Lip Benchmark — Multilingual Lip-Sync</title>
+<style>
+  :root {
+    --bg:#f4f7f6; --card:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --line:#e2e8f0; --green:#15803d; --green2:#166534; --teal:#0f766e;
+    --blue:#2563eb; --violet:#7c3aed; --amber:#d97706;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+    line-height:1.55; }
+  .wrap { max-width:1180px; margin:0 auto; padding:28px; }
+  .hero { background:linear-gradient(135deg,#052e16 0%,#166534 55%,#0f766e 100%);
+    color:#fff; border-radius:18px; padding:38px 40px; margin-bottom:18px;
+    box-shadow:0 12px 30px rgba(15,23,42,.18); }
+  .hero h1 { margin:0 0 8px; font-size:clamp(1.45rem,3vw,2.1rem); letter-spacing:-.02em; }
+  .hero p { margin:0; opacity:.92; font-size:1.02rem; max-width:900px; }
+  .hero .kicker { display:inline-block; background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.22); padding:4px 10px; border-radius:999px;
+    font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    margin-bottom:12px; }
+  .meta { display:flex; flex-wrap:wrap; gap:10px 22px; background:#0b1220; color:#cbd5e1;
+    border-radius:14px; padding:14px 18px; font-size:.86rem; margin-bottom:22px; }
+  .meta b { color:#fff; }
+  .nav { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 22px; }
+  .nav a { color:#0f766e; background:#fff; border:1px solid var(--line);
+    padding:7px 12px; border-radius:999px; text-decoration:none; font-weight:600;
+    font-size:.86rem; }
+  .nav a:hover { background:#ecfdf5; border-color:#a7f3d0; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+    gap:14px; margin:0 0 26px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:16px 18px; box-shadow:0 4px 14px rgba(15,23,42,.04); }
+  .stat .k { color:var(--muted); font-size:.78rem; text-transform:uppercase;
+    letter-spacing:.07em; font-weight:700; }
+  .stat .v { font-size:1.55rem; font-weight:800; color:var(--green2); margin-top:2px;
+    letter-spacing:-.02em; }
+  .stat .s { color:var(--muted); font-size:.82rem; }
+  section { margin:0 0 28px; }
+  h2 { font-size:1.28rem; margin:0 0 14px; padding-bottom:9px;
+    border-bottom:2px solid #d1fae5; color:#064e3b; }
+  h3 { font-size:1.05rem; margin:0; color:#0f172a; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:18px 20px; box-shadow:0 6px 20px rgba(15,23,42,.045); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; }
+  .clip { background:var(--card); border:1px solid var(--line); border-radius:16px;
+    overflow:hidden; box-shadow:0 6px 20px rgba(15,23,42,.045); display:flex;
+    flex-direction:column; }
+  .clip video { width:100%; height:320px; object-fit:contain; background:#05070b;
+    border-bottom:1px solid var(--line); }
+  .clip.small video { height:260px; }
+  .clip-body { padding:12px 14px 14px; }
+  .clip-top { display:flex; align-items:center; justify-content:space-between;
+    gap:8px; margin-bottom:6px; }
+  .clip h4 { margin:0 0 6px; font-size:.98rem; }
+  .clip-meta { display:flex; flex-wrap:wrap; gap:4px 12px; color:var(--muted);
+    font-size:.82rem; }
+  .clip-meta b { color:#0f172a; }
+  .badge { display:inline-block; padding:3px 8px; border-radius:999px;
+    font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+  .badge.image { background:#dbeafe; color:#1d4ed8; }
+  .badge.video { background:#ede9fe; color:#6d28d9; }
+  .lang { font-size:.8rem; color:var(--muted); font-weight:600; }
+  .lang-block { margin:0 0 22px; }
+  .lang-head { display:flex; align-items:baseline; justify-content:space-between;
+    gap:12px; flex-wrap:wrap; margin:0 0 10px; }
+  .muted { color:var(--muted); font-size:.85rem; }
+  .table-wrap { background:var(--card); border:1px solid var(--line);
+    border-radius:14px; overflow:auto; box-shadow:0 6px 20px rgba(15,23,42,.045); }
+  table { width:100%; border-collapse:collapse; font-size:.86rem; min-width:900px; }
+  th { background:#0f172a; color:#e2e8f0; text-align:left; padding:10px 10px;
+    font-size:.76rem; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
+  td { padding:9px 10px; border-top:1px solid var(--line); vertical-align:middle; }
+  tbody tr:nth-child(even) { background:#f8fafc; }
+  td.n, th.n { text-align:right; font-variant-numeric:tabular-nums; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:820px) { .two-col { grid-template-columns:1fr; } .wrap { padding:16px; } .hero { padding:28px 24px; } }
+  .chart { display:flex; flex-direction:column; gap:9px; }
+  .bar-row { display:grid; grid-template-columns:78px 1fr 68px; align-items:center; gap:10px; }
+  .bar-label { font-size:.82rem; color:#334155; font-weight:600; }
+  .bar-track { height:16px; background:#f1f5f9; border-radius:999px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:999px; }
+  .bar-fill.image { background:linear-gradient(90deg,#2563eb,#60a5fa); }
+  .bar-fill.video { background:linear-gradient(90deg,#7c3aed,#a78bfa); }
+  .bar-val { font-size:.8rem; color:#0f172a; font-weight:700; text-align:right;
+    font-variant-numeric:tabular-nums; }
+  .note { background:#fffbeb; border:1px solid #fde68a; color:#78350f;
+    border-radius:12px; padding:12px 14px; font-size:.86rem; }
+  .note b { color:#92400e; }
+  .cmd { background:#0b1220; color:#d1fae5; border-radius:12px; padding:14px 16px;
+    overflow:auto; font-family:Consolas,"Cascadia Mono",monospace; font-size:.78rem;
+    line-height:1.55; white-space:pre; }
+  .links { display:flex; flex-wrap:wrap; gap:10px; }
+  .links a { display:inline-block; padding:9px 14px; border-radius:10px;
+    background:#0f766e; color:#fff; text-decoration:none; font-weight:700; font-size:.86rem; }
+  .links a.alt { background:#fff; color:#0f766e; border:1px solid #99f6e4; }
+  footer { color:var(--muted); font-size:.8rem; text-align:center; padding:22px 0 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Wav2Lip · generation time</div>
+    <h1>🎬 Wav2Lip Benchmark — Hindi · English · Marathi</h1>
+    <p>Twelve lip-sync runs across two portrait images and one video, driven by
+       OmniVoice audio. Every timing below is a full process run: Python startup,
+       model load, face detection, inference and ffmpeg mux.</p>
+  </header>
+
+  <div class="meta">
+    <span><b>Model:</b> Wav2Lip GAN · <code>wav2lip_gan.pth</code></span>
+    <span><b>GPU:</b> NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb</span>
+    <span><b>Audio:</b> OmniVoice · 24 kHz · hi/en/mr</span>
+    <span><b>Runs:</b> 12 (9 multilingual + 3 timing)</span>
+    <span><b>Quality metrics:</b> intentionally not included</span>
+  </div>
+
+  <nav class="nav">
+    <a href="#overview">Overview</a>
+    <a href="#timing">Timing table</a>
+    <a href="#scaling">Scaling</a>
+    <a href="#outputs">Outputs</a>
+    <a href="#matrix">5/10/20 s</a>
+    <a href="#existing">Existing runs</a>
+    <a href="#method">Method</a>
+  </nav>
+
+  <section id="overview">
+    <div class="stats">
+      <div class="stat"><div class="k">Runs</div><div class="v">12/12</div><div class="s">completed, 0 failures</div></div>
+      <div class="stat"><div class="k">Total wall time</div><div class="v">194.8 s</div><div class="s">all 12 runs</div></div>
+      <div class="stat"><div class="k">Average RTF</div><div class="v">1.213</div><div class="s">wall ÷ audio seconds</div></div>
+      <div class="stat"><div class="k">Image vs video</div><div class="v">8.0 / 40.9 s</div><div class="s">average wall per run</div></div>
+      <div class="stat"><div class="k">Peak VRAM</div><div class="v">18.5 GB</div><div class="s">video mode · image 4.1 GB</div></div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">Key findings</h2>
+      <ul style="margin:0; padding-left:20px">
+        <li><b>Static image mode is ~5× faster than video mode</b> — 8.0 s vs
+            40.9 s average wall per run. Face detection runs once per image,
+            not on every frame.</li>
+        <li><b>Image mode is dominated by fixed overhead.</b> A 5 s clip takes 6.25 s,
+            a 20 s clip 7.51 s — the model load and
+            single face detection cost more than the extra frames.</li>
+        <li><b>Video mode runs at ~2.88× realtime</b> on this MIG slice
+            (40.9 s wall for a 14.2 s clip), with
+            18.5 GB peak VRAM.</li>
+        <li><b>Output duration matches input audio</b> for all 12 runs
+            (difference ≤ 0.01 s).</li>
+        <li><b>Cold start matters.</b> The very first image run took 47.15 s; after the
+            weights and face detector were in page cache, the same run took
+            9.96 s.
+            The table uses warm runs.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="timing">
+    <h2>Generation time — all runs</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Run</th><th>Mode</th><th>Visual</th><th>Language</th>
+          <th class="n">Audio s</th><th class="n">Output s</th><th class="n">Wall s</th>
+          <th class="n">RTF</th><th class="n">VRAM GB</th><th class="n">RSS GB</th>
+          <th>Resolution</th><th class="n">FPS</th>
+        </tr></thead>
+        <tbody>
+<tr><td>visual01-hi</td><td><span class="badge image">static image</span></td><td>Image 1 · portrait</td><td>Hindi</td><td class='n'>14.20</td><td class='n'>14.20</td><td class='n'>9.96</td><td class='n'>0.701</td><td class='n'>4.1</td><td class='n'>2.3</td><td>450x678</td><td class='n'>24</td></tr>
+<tr><td>visual01-en</td><td><span class="badge image">static image</span></td><td>Image 1 · portrait</td><td>English</td><td class='n'>14.22</td><td class='n'>14.22</td><td class='n'>11.58</td><td class='n'>0.814</td><td class='n'>4.1</td><td class='n'>2.1</td><td>450x678</td><td class='n'>24</td></tr>
+<tr><td>visual01-mr</td><td><span class="badge image">static image</span></td><td>Image 1 · portrait</td><td>Marathi</td><td class='n'>14.28</td><td class='n'>14.28</td><td class='n'>7.75</td><td class='n'>0.543</td><td class='n'>4.1</td><td class='n'>2.1</td><td>450x678</td><td class='n'>24</td></tr>
+<tr><td>visual02-hi</td><td><span class="badge image">static image</span></td><td>Image 2 · square</td><td>Hindi</td><td class='n'>14.20</td><td class='n'>14.20</td><td class='n'>7.28</td><td class='n'>0.513</td><td class='n'>4.1</td><td class='n'>2.2</td><td>554x554</td><td class='n'>24</td></tr>
+<tr><td>visual02-en</td><td><span class="badge image">static image</span></td><td>Image 2 · square</td><td>English</td><td class='n'>14.22</td><td class='n'>14.22</td><td class='n'>7.24</td><td class='n'>0.509</td><td class='n'>4.1</td><td class='n'>2.2</td><td>554x554</td><td class='n'>24</td></tr>
+<tr><td>visual02-mr</td><td><span class="badge image">static image</span></td><td>Image 2 · square</td><td>Marathi</td><td class='n'>14.28</td><td class='n'>14.28</td><td class='n'>7.57</td><td class='n'>0.530</td><td class='n'>4.1</td><td class='n'>2.2</td><td>554x554</td><td class='n'>24</td></tr>
+<tr><td>video-hi</td><td><span class="badge video">video</span></td><td>Video · marathi-demo-2</td><td>Hindi</td><td class='n'>14.20</td><td class='n'>14.20</td><td class='n'>40.07</td><td class='n'>2.822</td><td class='n'>18.5</td><td class='n'>3.9</td><td>1280x720</td><td class='n'>24</td></tr>
+<tr><td>video-en</td><td><span class="badge video">video</span></td><td>Video · marathi-demo-2</td><td>English</td><td class='n'>14.22</td><td class='n'>14.22</td><td class='n'>41.74</td><td class='n'>2.936</td><td class='n'>18.5</td><td class='n'>3.9</td><td>1280x720</td><td class='n'>24</td></tr>
+<tr><td>video-mr</td><td><span class="badge video">video</span></td><td>Video · marathi-demo-2</td><td>Marathi</td><td class='n'>14.28</td><td class='n'>14.28</td><td class='n'>40.95</td><td class='n'>2.868</td><td class='n'>18.5</td><td class='n'>3.9</td><td>1280x720</td><td class='n'>24</td></tr>
+<tr><td>visual01-hi-5s</td><td><span class="badge image">static image</span></td><td>Image 1 · portrait</td><td>Hindi</td><td class='n'>5.00</td><td class='n'>5.00</td><td class='n'>6.25</td><td class='n'>1.251</td><td class='n'>3.7</td><td class='n'>1.8</td><td>450x678</td><td class='n'>24</td></tr>
+<tr><td>visual01-hi-10s</td><td><span class="badge image">static image</span></td><td>Image 1 · portrait</td><td>Hindi</td><td class='n'>10.00</td><td class='n'>10.00</td><td class='n'>6.94</td><td class='n'>0.694</td><td class='n'>4.1</td><td class='n'>2.1</td><td>450x678</td><td class='n'>24</td></tr>
+<tr><td>visual01-hi-20s</td><td><span class="badge image">static image</span></td><td>Image 1 · portrait</td><td>Hindi</td><td class='n'>20.00</td><td class='n'>20.00</td><td class='n'>7.51</td><td class='n'>0.375</td><td class='n'>4.1</td><td class='n'>2.3</td><td>450x678</td><td class='n'>24</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="margin:8px 2px 0">RTF = wall time ÷ audio duration. Lower is faster.
+      VRAM is the peak device-used value sampled every 0.5 s; RSS is the peak process-tree memory.</p>
+  </section>
+
+  <section id="scaling">
+    <h2>Duration scaling</h2>
+    <div class="two-col">
+      <div class="card">
+        <h3 style="margin-bottom:4px">Static image mode</h3>
+        <p class="muted" style="margin:0 0 12px">Face detected once; fixed overhead dominates.</p>
+        <div class="chart"><div class="bar-row"><span class="bar-label">5 s</span><div class="bar-track"><div class="bar-fill image" style="width:81.6%"></div></div><span class="bar-val">6.25 s</span></div>
+<div class="bar-row"><span class="bar-label">10 s</span><div class="bar-track"><div class="bar-fill image" style="width:90.6%"></div></div><span class="bar-val">6.94 s</span></div>
+<div class="bar-row"><span class="bar-label">14.2 s</span><div class="bar-track"><div class="bar-fill image" style="width:100.0%"></div></div><span class="bar-val">7.66 s</span></div>
+<div class="bar-row"><span class="bar-label">20 s</span><div class="bar-track"><div class="bar-fill image" style="width:98.0%"></div></div><span class="bar-val">7.51 s</span></div></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:4px">Video mode</h3>
+        <p class="muted" style="margin:0 0 12px">Face detected every frame; 64.5 s uses a looped 15.02 s source.</p>
+        <div class="chart"><div class="bar-row"><span class="bar-label">5 s</span><div class="bar-track"><div class="bar-fill video" style="width:43.8%"></div></div><span class="bar-val">26.20 s</span></div>
+<div class="bar-row"><span class="bar-label">10 s</span><div class="bar-track"><div class="bar-fill video" style="width:75.3%"></div></div><span class="bar-val">44.98 s</span></div>
+<div class="bar-row"><span class="bar-label">14.2 s</span><div class="bar-track"><div class="bar-fill video" style="width:68.5%"></div></div><span class="bar-val">40.92 s</span></div>
+<div class="bar-row"><span class="bar-label">20 s</span><div class="bar-track"><div class="bar-fill video" style="width:79.1%"></div></div><span class="bar-val">47.25 s</span></div>
+<div class="bar-row"><span class="bar-label">65 s</span><div class="bar-track"><div class="bar-fill video" style="width:100.0%"></div></div><span class="bar-val">59.76 s</span></div></div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:12px">
+      <b>Image scaling:</b> 5 / 10 / 20 s runs plus the median of the six 14.2 s image runs.
+      <b>Video scaling:</b> existing 5 / 10 / 20 / 64.5 s runs plus the mean of the three new
+      14.2 s video runs. The 20 s image timing clip is a looped extension of the 14.2 s Hindi
+      audio and is used only for scaling.
+    </div>
+  </section>
+
+  <section id="outputs">
+    <h2>Multilingual outputs</h2>
+    
+    <section class="lang-block">
+      <div class="lang-head">
+        <h3>🇮🇳 Hindi</h3>
+        <span class="muted">3 outputs · same audio, three visuals</span>
+      </div>
+      <div class="grid">
+    <article class="clip">
+      <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/visual01-hi.mp4"></video>
+      <div class="clip-body">
+        <div class="clip-top"><span class="badge image">static image</span><span class="lang">🇮🇳 Hindi</span></div>
+        <h4>Image 1 · portrait</h4>
+        <div class="clip-meta">
+          <span><b>9.96 s</b> wall</span>
+          <span><b>0.701</b> RTF</span>
+          <span>450x678 · 24 fps</span>
+        </div>
+      </div>
+    </article>
+    
+
+    <article class="clip">
+      <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/visual02-hi.mp4"></video>
+      <div class="clip-body">
+        <div class="clip-top"><span class="badge image">static image</span><span class="lang">🇮🇳 Hindi</span></div>
+        <h4>Image 2 · square</h4>
+        <div class="clip-meta">
+          <span><b>7.28 s</b> wall</span>
+          <span><b>0.513</b> RTF</span>
+          <span>554x554 · 24 fps</span>
+        </div>
+      </div>
+    </article>
+    
+
+    <article class="clip">
+      <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/video-hi.mp4"></video>
+      <div class="clip-body">
+        <div class="clip-top"><span class="badge video">video</span><span class="lang">🇮🇳 Hindi</span></div>
+        <h4>Video · marathi-demo-2</h4>
+        <div class="clip-meta">
+          <span><b>40.07 s</b> wall</span>
+          <span><b>2.822</b> RTF</span>
+          <span>1280x720 · 24 fps</span>
+        </div>
+      </div>
+    </article>
+    </div>
+    </section>
+    
+    
+    <section class="lang-block">
+      <div class="lang-head">
+        <h3>🇬🇧 English</h3>
+        <span class="muted">3 outputs · same audio, three visuals</span>
+      </div>
+      <div class="grid">
+    <article class="clip">
+      <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/visual01-en.mp4"></video>
+      <div class="clip-body">
+        <div class="clip-top"><span class="badge image">static image</span><span class="lang">🇬🇧 English</span></div>
+        <h4>Image 1 · portrait</h4>
+        <div class="clip-meta">
+          <span><b>11.58 s</b> wall</span>
+          <span><b>0.814</b> RTF</span>
+          <span>450x678 · 24 fps</span>
+        </div>
+      </div>
+    </article>
+    
+
+    <article class="clip">
+      <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/visual02-en.mp4"></video>
+      <div class="clip-body">
+        <div class="clip-top"><span class="badge image">static image</span><span class="lang">🇬🇧 English</span></div>
+        <h4>Image 2 · square</h4>
+        <div class="clip-meta">
+          <span><b>7.24 s</b> wall</span>
+          <span><b>0.509</b> RTF</span>
+          <span>554x554 · 24 fps</span>
+        </div>
+      </div>
+    </article>
+    
+
+    <article class="clip">
+      <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/video-en.mp4"></video>
+      <div class="clip-body">
+        <div class="clip-top"><span class="badge video">video</span><span class="lang">🇬🇧 English</span></div>
+        <h4>Video · marathi-demo-2</h4>
+        <div class="clip-meta">
+          <span><b>41.74 s</b> wall</span>
+          <span><b>2.936</b> RTF</span>
+          <span>1280x720 · 24 fps</span>
+        </div>
+      </div>
+    </article>
+    </div>
+    </section>
+    
+    
+    <section class="lang-block">
+      <div class="lang-head">
+        <h3>🇮🇳 Marathi</h3>
+        <span class="muted">3 outputs · same audio, three visuals</span>
+      </div>
+      <div class="grid">
+    <article class="clip">
+      <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/visual01-mr.mp4"></video>
+      <div class="clip-body">
+        <div class="clip-top"><span class="badge image">static image</span><span class="lang">🇮🇳 Marathi</span></div>
+        <h4>Image 1 · portrait</h4>
+        <div class="clip-meta">
+          <span><b>7.75 s</b> wall</span>
+          <span><b>0.543</b> RTF</span>
+          <span>450x678 · 24 fps</span>
+        </div>
+      </div>
+    </article>
+    
+
+    <article class="clip">
+      <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/visual02-mr.mp4"></video>
+      <div class="clip-body">
+        <div class="clip-top"><span class="badge image">static image</span><span class="lang">🇮🇳 Marathi</span></div>
+        <h4>Image 2 · square</h4>
+        <div class="clip-meta">
+          <span><b>7.57 s</b> wall</span>
+          <span><b>0.530</b> RTF</span>
+          <span>554x554 · 24 fps</span>
+        </div>
+      </div>
+    </article>
+    
+
+    <article class="clip">
+      <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/video-mr.mp4"></video>
+      <div class="clip-body">
+        <div class="clip-top"><span class="badge video">video</span><span class="lang">🇮🇳 Marathi</span></div>
+        <h4>Video · marathi-demo-2</h4>
+        <div class="clip-meta">
+          <span><b>40.95 s</b> wall</span>
+          <span><b>2.868</b> RTF</span>
+          <span>1280x720 · 24 fps</span>
+        </div>
+      </div>
+    </article>
+    </div>
+    </section>
+    
+  </section>
+
+  <section id="matrix">
+    <h2>5 / 10 / 20 s timing matrix</h2>
+    <p class="muted" style="margin:0 0 12px">One portrait image, Hindi audio trimmed to 5 s and 10 s;
+      20 s is the 14.2 s clip looped to length. Same static-image command as the gallery.</p>
+    <div class="grid">
+        <article class="clip small">
+          <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/visual01-hi-5s.mp4"></video>
+          <div class="clip-body">
+            <div class="clip-top"><span class="badge image">static image</span><span class="lang">5 s audio</span></div>
+            <h4>5 s Hindi timing run</h4>
+            <div class="clip-meta"><span><b>6.25 s</b> wall</span><span><b>1.251</b> RTF</span></div>
+          </div>
+        </article>
+        
+
+        <article class="clip small">
+          <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/visual01-hi-10s.mp4"></video>
+          <div class="clip-body">
+            <div class="clip-top"><span class="badge image">static image</span><span class="lang">10 s audio</span></div>
+            <h4>10 s Hindi timing run</h4>
+            <div class="clip-meta"><span><b>6.94 s</b> wall</span><span><b>0.694</b> RTF</span></div>
+          </div>
+        </article>
+        
+
+        <article class="clip small">
+          <video controls preload="metadata" playsinline src="videos/wav2lip_multilingual/visual01-hi-20s.mp4"></video>
+          <div class="clip-body">
+            <div class="clip-top"><span class="badge image">static image</span><span class="lang">20 s audio</span></div>
+            <h4>20 s Hindi timing run</h4>
+            <div class="clip-meta"><span><b>7.51 s</b> wall</span><span><b>0.375</b> RTF</span></div>
+          </div>
+        </article>
+        </div>
+  </section>
+
+  <section id="existing">
+    <h2>Existing video runs (same input, same GPU class)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th class="n">Audio s</th><th class="n">Output s</th><th class="n">Wall s</th>
+          <th class="n">RTF</th><th class="n">VRAM GB</th><th class="n">RSS GB</th>
+          <th>Resolution</th><th>Note</th>
+        </tr></thead>
+        <tbody><tr><td>5.04 s</td><td>5.02 s</td><td class='n'>26.20</td><td class='n'>5.199</td><td class='n'>18.5</td><td class='n'>2.5</td><td>1280x720</td><td>trimmed audio</td></tr>
+<tr><td>10.03 s</td><td>10.02 s</td><td class='n'>44.98</td><td class='n'>4.485</td><td class='n'>21.3</td><td class='n'>3.3</td><td>1280x720</td><td>trimmed audio</td></tr>
+<tr><td>20.04 s</td><td>20.02 s</td><td class='n'>47.25</td><td class='n'>2.358</td><td class='n'>18.5</td><td class='n'>3.7</td><td>1280x720</td><td>trimmed audio</td></tr>
+<tr><td>64.52 s</td><td>64.55 s</td><td class='n'>59.76</td><td class='n'>0.926</td><td class='n'>18.5</td><td class='n'>3.7</td><td>1280x720</td><td>15.02 s source looped to 64.5 s</td></tr></tbody>
+      </table>
+    </div>
+    <p class="muted" style="margin:8px 2px 0">From the 2026-10-31 four-model benchmark.
+      The 64.5 s output loops the 15.02 s source video; see
+      <a href="benchmark_report.html">benchmark_report.html</a> for the full comparison.</p>
+  </section>
+
+  <section id="method">
+    <h2>Method &amp; caveats</h2>
+    <div class="two-col">
+      <div class="card">
+        <h3>Commands</h3>
+        <div class="cmd"># image (static, 24 fps)
+~/envs/latentsync/bin/python inference.py \
+  --checkpoint_path checkpoints/wav2lip_gan.pth \
+  --face .../visual_01.jpg \
+  --audio .../hi.wav \
+  --outfile .../visual01-hi.mp4 \
+  --static True --fps 24
+
+# video (fps from source)
+~/envs/latentsync/bin/python inference.py \
+  --checkpoint_path checkpoints/wav2lip_gan.pth \
+  --face .../marathi-demo-2.mp4 \
+  --audio .../hi.wav \
+  --outfile .../video-hi.mp4</div>
+      </div>
+      <div class="card">
+        <h3>Measurement</h3>
+        <ul style="margin:0; padding-left:20px">
+          <li><b>Wall time:</b> full inference process, from spawn to exit.</li>
+          <li><b>Includes:</b> Python startup, torch/CUDA init, checkpoint load,
+              face detection, Wav2Lip inference, ffmpeg mux.</li>
+          <li><b>RTF:</b> wall ÷ audio duration; 1.0 = realtime.</li>
+          <li><b>Sampling:</b> GPU memory every 0.5 s, process-tree RSS every 0.5 s.</li>
+          <li><b>Hardware:</b> NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb; torch 2.7.1+cu128, CUDA 12.8, Python 3.10.13.</li>
+          <li><b>Audio:</b> OmniVoice zero-shot, same Marathi female reference;
+              14.20 / 14.22 / 14.28 s for hi/en/mr.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Input audio (OmniVoice)</h3>
+      <div class="table-wrap" style="box-shadow:none; margin-top:8px">
+        <table>
+          <thead><tr><th>Language</th><th class="n">Chars</th><th class="n">Audio s</th>
+            <th class="n">Synthesis s</th><th class="n">RTF</th><th class="n">Sample rate</th></tr></thead>
+          <tbody><tr><td>Hindi</td><td class='n'>221</td><td class='n'>14.20</td><td class='n'>2.60</td><td class='n'>0.183</td><td class='n'>24,000</td></tr>
+<tr><td>English</td><td class='n'>235</td><td class='n'>14.22</td><td class='n'>2.12</td><td class='n'>0.149</td><td class='n'>24,000</td></tr>
+<tr><td>Marathi</td><td class='n'>209</td><td class='n'>14.28</td><td class='n'>2.56</td><td class='n'>0.179</td><td class='n'>24,000</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:16px">
+      <b>Caveats.</b> Static-image outputs move only the mouth; the head and background are frozen.
+      Image resolution is native (450×678 and 554×554) and was not upscaled. The 20 s timing
+      audio is a looped extension, not a separate script. The 64.5 s legacy run loops a 15.02 s
+      source video. Node05's Slurm GPU detection was broken at run time, so these jobs ran
+      manually over SSH on one MIG <code>1g.24gb</code> slice; timings are not directly comparable
+      to full-GPU or H200 runs. Per request, no LSE-D/C, CSIM or NIQE quality metrics were run
+      for these new outputs.
+    </div>
+  </section>
+
+  <section>
+    <h2>Documentation</h2>
+    <div class="links">
+      <a href="docs/WAV2LIP.md">Wav2Lip deep dive</a>
+      <a href="docs/PROJECT.md" class="alt">Project documentation</a>
+      <a href="README.md" class="alt">README</a>
+      <a href="benchmark_report.html" class="alt">System benchmark</a>
+      <a href="quality_report.html" class="alt">Quality report</a>
+      <a href="index.html" class="alt">All reports</a>
+    </div>
+  </section>
+
+  <footer>
+    Generated 2026-11-19 07:48 · Wav2Lip multilingual benchmark ·
+    12 runs · Hindi / English / Marathi
+  </footer>
+</div>
+</body>
+</html>

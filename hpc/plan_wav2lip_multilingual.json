@@ -1,0 +1,142 @@
+{
+  "created": "2026-11-19T21:10:00+05:30",
+  "created_host": "aicoeserver05",
+  "created_by": "aryannavale",
+  "outdir": "/home/aryannavale/projects/outputs/bench-20261119-lipsync-multilingual",
+  "inputs_dir": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+  "mode": "sequential",
+  "models": ["wav2lip"],
+  "quality": false,
+  "pairs": [],
+  "runs": [
+    {
+      "index": 0,
+      "model": "wav2lip",
+      "tag": "visual01-hi",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/lipsync_multilingual/visual_01.jpg",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/hi.wav",
+      "pair_index": 0,
+      "static": true,
+      "fps": 24
+    },
+    {
+      "index": 1,
+      "model": "wav2lip",
+      "tag": "visual01-en",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/lipsync_multilingual/visual_01.jpg",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/en.wav",
+      "pair_index": 1,
+      "static": true,
+      "fps": 24
+    },
+    {
+      "index": 2,
+      "model": "wav2lip",
+      "tag": "visual01-mr",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/lipsync_multilingual/visual_01.jpg",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/mr.wav",
+      "pair_index": 2,
+      "static": true,
+      "fps": 24
+    },
+    {
+      "index": 3,
+      "model": "wav2lip",
+      "tag": "visual02-hi",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/lipsync_multilingual/visual_02.jpg",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/hi.wav",
+      "pair_index": 3,
+      "static": true,
+      "fps": 24
+    },
+    {
+      "index": 4,
+      "model": "wav2lip",
+      "tag": "visual02-en",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/lipsync_multilingual/visual_02.jpg",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/en.wav",
+      "pair_index": 4,
+      "static": true,
+      "fps": 24
+    },
+    {
+      "index": 5,
+      "model": "wav2lip",
+      "tag": "visual02-mr",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/lipsync_multilingual/visual_02.jpg",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/mr.wav",
+      "pair_index": 5,
+      "static": true,
+      "fps": 24
+    },
+    {
+      "index": 6,
+      "model": "wav2lip",
+      "tag": "video-hi",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-2.mp4",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/hi.wav",
+      "pair_index": 6,
+      "static": false
+    },
+    {
+      "index": 7,
+      "model": "wav2lip",
+      "tag": "video-en",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-2.mp4",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/en.wav",
+      "pair_index": 7,
+      "static": false
+    },
+    {
+      "index": 8,
+      "model": "wav2lip",
+      "tag": "video-mr",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/marathi-demo-2/marathi-demo-2.mp4",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/mr.wav",
+      "pair_index": 8,
+      "static": false
+    },
+    {
+      "index": 9,
+      "model": "wav2lip",
+      "tag": "visual01-hi-5s",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/lipsync_multilingual/visual_01.jpg",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/hi_5s.wav",
+      "pair_index": 9,
+      "static": true,
+      "fps": 24
+    },
+    {
+      "index": 10,
+      "model": "wav2lip",
+      "tag": "visual01-hi-10s",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/lipsync_multilingual/visual_01.jpg",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/hi_10s.wav",
+      "pair_index": 10,
+      "static": true,
+      "fps": 24
+    },
+    {
+      "index": 11,
+      "model": "wav2lip",
+      "tag": "visual01-hi-20s",
+      "folder": "/home/aryannavale/projects/inputs/lipsync_multilingual",
+      "video": "/home/aryannavale/projects/inputs/lipsync_multilingual/visual_01.jpg",
+      "audio": "/home/aryannavale/projects/inputs/lipsync_multilingual/audio/hi_20s.wav",
+      "pair_index": 11,
+      "static": true,
+      "fps": 24
+    }
+  ]
+}
