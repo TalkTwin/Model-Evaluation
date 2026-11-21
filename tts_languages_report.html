@@ -552,7 +552,7 @@ a{color:var(--blue)}
 </div></div><h2 class="section">System metrics</h2>
 <div class="tablebox"><table><thead><tr>
 <th>Model</th><th>Load (s)</th><th>Total synthesis (s)</th><th>Avg RTF</th>
-<th>Peak PyTorch VRAM</th><th>GPU used peak*</th><th>CPU RAM peak</th><th>ASR scored</th><th>Official languages</th>
+<th>Peak PyTorch VRAM</th><th>GPU used peak</th><th>CPU RAM peak</th><th>ASR scored</th><th>Official languages</th>
 </tr></thead><tbody><tr>
 <td class="model">OmniVoice</td>
 <td>17.2</td>
@@ -573,10 +573,7 @@ a{color:var(--blue)}
 <td>2623 MB</td>
 <td>10/11</td>
 <td>11/13</td>
-</tr></tbody></table></div><div class="notes" style="background:#fffbeb;border-left-color:#b45309;color:#78350f">
-<b>*VRAM note.</b> <i>Peak PyTorch VRAM</i> is the model process's own maximum CUDA allocation over load and synthesis.
-<i>GPU used peak</i> is whole-device usage and can include other MIG tenants, so it is not attributable to the model.
-</div>
+</tr></tbody></table></div>
 <div class="notes">
 <b>Method.</b> Both models receive the same female Marathi reference clip and transcript, the same 13 target
 translations, one seed (1234) and the same sequential GPU allocation. OmniVoice uses its declared language code

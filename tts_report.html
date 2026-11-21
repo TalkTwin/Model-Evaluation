@@ -319,7 +319,7 @@ than raw WER.
 <h2 class="section">System metrics</h2>
 <div class="tablebox"><table><thead><tr>
 <th>Model</th><th>Load (s)</th><th>Total synthesis (s)</th><th>Avg RTF</th>
-<th>Peak PyTorch VRAM</th><th>GPU used peak*</th><th>CPU RAM peak</th><th>Torch</th><th>GPU</th>
+<th>Peak PyTorch VRAM</th><th>GPU used peak</th><th>CPU RAM peak</th><th>Torch</th><th>GPU</th>
 </tr></thead><tbody>
 <tr>
 <td class="model">OmniVoice</td>
@@ -344,11 +344,6 @@ than raw WER.
 <td>NVIDIA H200 NVL MIG 1g.18gb</td>
 </tr>
 </tbody></table></div>
-<div class="notes" style="background:#fffbeb;border-left-color:#b45309;color:#78350f">
-<b>*VRAM note.</b> <i>Peak PyTorch VRAM</i> is the model process's own CUDA allocation (max of load and synthesis).
-<i>GPU used peak</i> is whole-device usage sampled during the run and includes other MIG tenants, so it is
-not attributable to the model. Use the PyTorch figure for model footprint.
-</div>
 <div class="notes">
 <b>Method.</b> Both models get the same Marathi reference clip and transcript (zero-shot cloning),
 the same four target texts and the same GPU slice. WER/CER come from faster-whisper large-v3 (mr)
